@@ -3,34 +3,45 @@
 <title>CSIE Online Games: Sign Up</title>
 
 <html>
-<h1>Sign Up for CSIE Online Games</h1>  
-<form action="/" method="post">
+<h1>Sign Up for CSIE Online Games</h1>
+
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <ul class=flashes>
+    {% for message in messages %}
+      <li>{{ message }}</li>
+    {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
+
+<form action="/signup" method="post">
   <div>
     <label>
       Username<span class="req">*</span>
     </label>
-    <input type="text"required autocomplete="off"/>
+    <input type="text" required autocomplete="off" name="username"/>
   </div>
 
   <div class="field-wrap">
     <label>
       Email Address<span class="req">*</span>
     </label>
-    <input type="email"required autocomplete="off"/>
+    <input type="email"required autocomplete="off" name="email"/>
   </div>
 
   <div class="field-wrap">
     <label>
       Password<span class="req">*</span>
     </label>
-    <input type="password"required autocomplete="off"/>
+    <input type="password"required autocomplete="off" name="passwd"/>
   </div>
 
   <div class="field-wrap">
     <label>
       Confirm Password<span class="req">*</span>
     </label>
-    <input type="password"required autocomplete="off"/>
+    <input type="password"required autocomplete="off" name="passwd-confirm"/>
   </div>  
 
   <button type="submit" class="button button-block">Get Started</button>

@@ -3,6 +3,7 @@ from models import db
 
 def create_app():
     app = Flask(__name__)
+    app.secret_key='secret key'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:final@35.236.142.37/Casino'
 

@@ -1,16 +1,19 @@
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
+from models import db
 
-app = Flask(__name__)
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:final@/Casino?unix_socket=/cloudsql/cnlab20-group12:asia-east1:mysql-cnlab20-group12'
-db = SQLAlchemy(app)
+def create_app():
+    app = Flask(__name__)
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:final@35.236.142.37/Casino'
 
-from models import User_Info
+    db.init_app(app)
+    with app.app_context():
+        import routes
+        db.create_all()
+        db.session.commit()
 
-db.create_all()
-db.session.commit()
+    return app
 
-@app.route('/')
-def hello_world():
-    return 'Hello, World!'
+if __name__ == '__main__':
+    app = create_app()
+    app.run('127.0.0.1', 5000, debug=True)

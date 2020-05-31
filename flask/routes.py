@@ -2,6 +2,7 @@ from flask import current_app as app
 from flask import render_template, request, flash, redirect, url_for
 from models import UserInfo
 from main import db
+from flask_login import login_user, logout_user, login_required, current_user
 
 import sys
 
@@ -13,7 +14,31 @@ def hello_world():
 def show_index():
   return render_template('index.html')
 
+@app.route('/index', methods=['POST'])
+def logging():
+    email_rec = request.form.get('email')
+    passwd_rec = request.form.get('passwd')
+
+    user = UserInfo.query.filter_by(email=email_rec).first()
+    if user:
+        if user.verify_password(passwd_rec):
+            login_user(user, remember=True)
+            return 'Welcome:' + current_user.username
+        else:
+            flash('Wrong Email or Password')
+    else:
+        flash('Wrong Email or Password')
+    return redirect(url_for('show_index'))
+
+@app.route('/logout', methods=['GET'])
+@login_required
+def logout():
+    logout_user()
+    flash('Logged out.')
+    return redirect(url_for('show_index'))
+
 @app.route('/peekdb', methods=['GET'])
+@login_required
 def show_db_content():
   users_table = UserInfo.query.order_by(UserInfo.id).all()
   msg = '<tr> <th>{}</th> <th>{}</th> <th>{}</th> <th>{}</th> </tr>'.format('[ID]', '[username]', '[email]', '[joined at]')
@@ -51,6 +76,6 @@ def create_user():
   new_user.password = passwd
   db.session.add(new_user)
   db.session.commit()
-  
+
   flash('Signup successful!')
   return redirect(url_for('show_index'))

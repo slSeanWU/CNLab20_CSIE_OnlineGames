@@ -1,5 +1,5 @@
 from flask import Flask
-from models import db
+from models import db, login_manager
 
 def create_app():
     app = Flask(__name__)
@@ -12,6 +12,9 @@ def create_app():
         import routes
         db.create_all()
         db.session.commit()
+
+    login_manager.init_app(app)
+    login_manager.login_view = 'show_index'
 
     return app
 

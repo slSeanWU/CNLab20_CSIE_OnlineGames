@@ -12,10 +12,12 @@ def hello_world():
 
 @app.route('/index', methods=['GET'])
 def show_index():
-  return render_template('index.html')
+    if current_user.is_authenticated:
+        return redirect(url_for('welcome'))
+    return render_template('index.html')
 
 @app.route('/index', methods=['POST'])
-def logging():
+def login():
     email_rec = request.form.get('email')
     passwd_rec = request.form.get('passwd')
 
@@ -23,12 +25,17 @@ def logging():
     if user:
         if user.verify_password(passwd_rec):
             login_user(user, remember=True)
-            return 'Welcome:' + current_user.username
+            return redirect(url_for('welcome'))
         else:
             flash('Wrong Email or Password')
     else:
         flash('Wrong Email or Password')
     return redirect(url_for('show_index'))
+
+@app.route('/logged_in', methods=['GET'])
+@login_required
+def welcome():
+    return 'Welcome %s <br/> <a href="/logout">Log out.</a>' % (current_user.username)
 
 @app.route('/logout', methods=['GET'])
 @login_required

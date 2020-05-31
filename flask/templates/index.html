@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<title>CSIE Online Games</title>
+
+<html>
+<div id="login">
+  <h1>Welcome to CSIE Games!</h1>
+  
+  <h2>User Login</h2>
+  <form action="/index" method="post">
+
+    <div class="field-wrap">
+      <label>
+        Email<span class="req">*</span>
+      </label>
+      <input type="email" required autocomplete="off" />
+    </div>
+
+    <div class="field-wrap">
+      <label>
+        Password<span class="req">*</span>
+      </label>
+      <input type="password" required autocomplete="off" />
+    </div>
+
+    <p class="forgot"><a href="#">Forgot Password?</a></p>
+
+    <button>Log In</button>
+  </form>
+
+  (No account yet?)<br>
+  <a href="/signup">
+    <button>Sign Up</button>
+  </a>
+</div>
+</html>

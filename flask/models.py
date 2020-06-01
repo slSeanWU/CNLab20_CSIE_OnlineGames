@@ -30,3 +30,15 @@ class UserInfo(UserMixin, db.Model):
     @login_manager.user_loader
     def load_user(userid):
         return UserInfo.query.get(int(userid))
+
+class CoinVoucher(db.Model):
+    '''
+    For top-ups
+    '''
+    __tablename__ = 'coin_voucher'
+    id = db.Column(db.Integer, primary_key=True)
+    serial_num = db.Column(db.String(64), unique=True, nullable=False)
+    value = db.Column(db.Integer, unique=True, nullable=False)
+    issued_time = db.Column(db.DateTime, default=datetime.now)
+    expiration_time = db.Column(db.DateTime)
+    used = db.Column(db.Boolean, default=False, nullable=False)

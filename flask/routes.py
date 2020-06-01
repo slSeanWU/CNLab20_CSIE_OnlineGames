@@ -14,7 +14,7 @@ def hello_world():
 @app.route('/index', methods=['GET'])
 def show_index():
     if current_user.is_authenticated:
-        return redirect(url_for('welcome'))
+        return redirect(url_for('main_menu'))
     return render_template('index.html')
 
 @app.route('/index', methods=['POST'])
@@ -26,7 +26,7 @@ def login():
     if user:
         if user.verify_password(passwd_rec):
             login_user(user, remember=True)
-            return redirect(url_for('welcome'))
+            return redirect(url_for('main_menu'))
         else:
             flash('Login FAILED. Wrong Email or Password')
     else:
@@ -34,14 +34,14 @@ def login():
 
     return redirect(url_for('show_index'))
 
-@app.route('/logged_in', methods=['GET'])
+@app.route('/main_menu', methods=['GET'])
 @login_required
-def welcome():
+def main_menu():
     # update last active time
     user = UserInfo.query.filter_by(username=current_user.username).first()
     user.last_active_time = datetime.now()
     db.session.commit()
-    return 'Welcome %s <br/> <a href="/logout">Log out.</a>' % (current_user.username)
+    return render_template('main_menu.html', username=user.username, coins=user.coins)
 
 @app.route('/logout', methods=['GET'])
 @login_required

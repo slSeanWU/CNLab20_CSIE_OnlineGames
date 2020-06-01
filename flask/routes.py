@@ -5,6 +5,7 @@ from main import db
 from flask_login import login_user, logout_user, login_required, current_user
 
 import sys
+from datetime import datetime
 
 @app.route('/')
 def hello_world():
@@ -27,14 +28,19 @@ def login():
             login_user(user, remember=True)
             return redirect(url_for('welcome'))
         else:
-            flash('Wrong Email or Password')
+            flash('Login FAILED. Wrong Email or Password')
     else:
-        flash('Wrong Email or Password')
+        flash('Login FAILED. Wrong Email or Password')
+
     return redirect(url_for('show_index'))
 
 @app.route('/logged_in', methods=['GET'])
 @login_required
 def welcome():
+    # update last active time
+    user = UserInfo.query.filter_by(username=current_user.username).first()
+    user.last_active_time = datetime.now()
+    db.session.commit()
     return 'Welcome %s <br/> <a href="/logout">Log out.</a>' % (current_user.username)
 
 @app.route('/logout', methods=['GET'])
@@ -48,10 +54,10 @@ def logout():
 @login_required
 def show_db_content():
   users_table = UserInfo.query.order_by(UserInfo.id).all()
-  msg = '<tr> <th>{}</th> <th>{}</th> <th>{}</th> <th>{}</th> </tr>'.format('[ID]', '[username]', '[email]', '[joined at]')
+  msg = '<tr> <th>{}</th> <th>{}</th> <th>{}</th> <th>{}</th> <th>{}</th> </tr>'.format('[ID]', '[username]', '[email]', '[joined at]', '[last active]')
 
   for u in users_table:
-    msg += '<tr> <td>{}</td> <td>{}</td> <td>{}</td> <td>{}</td> </tr>'.format(u.id, u.username, u.email, u.registration_time)
+    msg += '<tr> <td>{}</td> <td>{}</td> <td>{}</td> <td>{}</td> <td>{}</td> </tr>'.format(u.id, u.username, u.email, u.registration_time, u.last_active_time)
 
   return '<h1> All Users </h1> <table> {} </table>'.format(msg)
 

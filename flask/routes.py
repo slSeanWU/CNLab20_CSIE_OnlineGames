@@ -34,6 +34,19 @@ def login():
 
     return redirect(url_for('show_index'))
 
+@app.route('/member_center', methods=['GET'])
+@login_required
+def member_center():
+    user = UserInfo.query.filter_by(username=current_user.username).first()
+    return render_template('member_center.html', username=user.username, coins=user.coins)
+
+@app.route('/member_center', methods=['POST'])
+@login_required
+def member_update():
+    # TODO
+    # handle change username/passwd & top-up authentication
+    pass
+  
 @app.route('/main_menu', methods=['GET'])
 @login_required
 def main_menu():

@@ -6,6 +6,17 @@
 <div id="head">
   <h1>CSIE Online Games --- Main Menu</h1>
   <h4>Welcome, {{ username }}.    Your coins: {{ coins }}.</h4>
+  
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <ul class=flashes>
+      {% for message in messages %}
+        <li>{{ message }}</li>
+      {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+
 </div>
 
 <div id="menu">

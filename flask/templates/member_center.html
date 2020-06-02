@@ -6,17 +6,28 @@
 <div id="head">
   <h1>CSIE Online Games --- Member Center</h1>
   <h4>User: {{ username }} <br> Coins: {{ coins }}</h4>
+  
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <ul class=flashes>
+      {% for message in messages %}
+        <li>{{ message }}</li>
+      {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+
 </div>
 
 <div id="manage">
   <h3>Change Username</h3>
-  <form action="/member_center" method="post" id="change-username">
+  <form action="/change_username" method="post" id="change-username">
     <input type="text" required autocomplete="off" name="new-username"/>
     <button type="submit">Change</button>
   </form>
 
   <h3>Change Password</h3>
-  <form action="/member_center" method="post" id="change-username">
+  <form action="/change_password" method="post" id="change-password">
     <label>Old password</label>
     <input type="password" required autocomplete="off" name="old-passwd"/>
     <label>New password</label>
@@ -27,7 +38,7 @@
   </form>
 
   <h3>Top-up Coins</h3>
-  <form action="/member_center" method="post" id="topup">
+  <form action="/top_up" method="post" id="topup">
     <label>Enter your pre-issued serial number</label>
     <input type="text" required autocomplete="off" name="topup-serial-num"/>
     <button type="submit">Authenticate</button>
@@ -37,5 +48,9 @@
     <button>Watch An Ad</button>
   </a>
 </div>
+
+<a href="/main_menu">
+    <button>Back to Main Menu</button>
+</a>
 
 </html>

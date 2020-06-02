@@ -9,7 +9,7 @@ from datetime import datetime
 
 @app.route('/')
 def hello_world():
-  return 'Hello, World!'
+    return redirect(url_for('show_index'))
 
 @app.route('/index', methods=['GET'])
 def show_index():
@@ -25,12 +25,14 @@ def login():
     user = UserInfo.query.filter_by(email=email_rec).first()
     if user:
         if user.verify_password(passwd_rec):
+            # TODO
+            # client can check remember me or not
             login_user(user, remember=True)
             return redirect(url_for('main_menu'))
         else:
-            flash('Login FAILED. Wrong Email or Password')
+            flash('Login FAILED! Wrong Email or Password')
     else:
-        flash('Login FAILED. Wrong Email or Password')
+        flash('Login FAILED! Wrong Email or Password')
 
     return redirect(url_for('show_index'))
 
@@ -40,13 +42,48 @@ def member_center():
     user = UserInfo.query.filter_by(username=current_user.username).first()
     return render_template('member_center.html', username=user.username, coins=user.coins)
 
-@app.route('/member_center', methods=['POST'])
+
+@app.route('/change_username', methods=['POST'])
 @login_required
-def member_update():
+def change_username():
+    new_username = request.form.get('new-username')
+    if db.session.query(UserInfo.id).filter_by(username=new_username).scalar() is not None:
+        flash('Username changed FAILED! The username has been registered before!')
+        return redirect(url_for('member_center'))
+    user = current_user
+    user.username = new_username
+    db.session.commit()
+    flash('Username successfully changed.')
+    return redirect(url_for('main_menu'))
+
+
+@app.route('/change_password', methods=['POST'])
+@login_required
+def change_password():
+    old_password = request.form.get('old-passwd')
+    new_password = request.form.get('new-passwd')
+    new_password_confirm = request.form.get('new-passwd-confirm')
+    user = current_user
+    if not user.verify_password(old_password):
+        flash('Wrong old password or new passwords')
+    elif (not new_password) or (new_password != new_password_confirm):
+        flash('Wrong old password or new passwords')
+    else:
+        user.password = new_password
+        db.session.commit()
+        flash('Password successfully changed. Please login with new password.')
+        return redirect(url_for('logout'))
+    return redirect(url_for('member_center'))
+
+@app.route('/top_up', methods=['POST'])
+@login_required
+def top_up():
     # TODO
-    # handle change username/passwd & top-up authentication
-    pass
-  
+    # handle top-up authentication
+    serial_num = request.form.get('topup-serial-num')
+    return redirect(url_for('member_center'))
+
+
 @app.route('/main_menu', methods=['GET'])
 @login_required
 def main_menu():

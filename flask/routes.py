@@ -6,6 +6,7 @@ from flask_login import login_user, logout_user, login_required, current_user
 
 import sys
 from datetime import datetime
+from uuid import uuid1
 
 @app.route('/')
 def hello_world():
@@ -109,7 +110,56 @@ def show_db_content():
   for u in users_table:
     msg += '<tr> <td>{}</td> <td>{}</td> <td>{}</td> <td>{}</td> <td>{}</td> </tr>'.format(u.id, u.username, u.email, u.registration_time, u.last_active_time)
 
-  return '<h1> All Users </h1> <table> {} </table>'.format(msg)
+  return '<h1>All Users</h1> <table> {} </table>'.format(msg)
+
+@app.route('/gen_voucher', methods=['POST'])
+@login_required
+def generate_vouchers():
+  voucher_value = int(request.form.get('new-voucher-value'))
+  voucher_cnt = int(request.form.get('new-voucher-count'))
+  for i in range(voucher_cnt):
+    new_voucher = CoinVoucher(
+      serial_num=str(uuid1()),
+      value=voucher_value
+    )
+    db.session.add(new_voucher)
+    db.session.commit()
+
+  return redirect(url_for('manage_vouchers'))
+
+@app.route('/manage_voucher', methods=['GET'])
+@login_required
+def manage_vouchers():
+  head = '<h1>Coin Voucher Management Center</h1>'
+
+  generate = '''
+    <div id="generate">
+    <h2>Generate Vouchers</h2> 
+      <form action="/gen_voucher" method="post" id="gen-voucher">
+        <label>Voucher value</label>
+        <input type="number" required autocomplete="off" name="new-voucher-value"/>
+        <br> <label># New vouchers</label>
+        <input type="number" required autocomplete="off" name="new-voucher-count"/>
+        <br> <button type="submit">Generate</button>
+      </form>
+    </div>
+  '''
+
+  vouchers_table = CoinVoucher.query.order_by(CoinVoucher.id).all()
+  list_voucher = '''
+    <div id="list">
+    <h2>All Vouchers</h2> 
+    <table id="list-table">
+      <tr> <th>[ID]</th> <th>[serial num]</th> <th>[value]</th> <th>[issued at]</th> <th>[was used]</th> </tr>
+  '''
+  for v in vouchers_table:
+    list_voucher += '<tr> <td>{}</td> <td>{}</td> <td>{}</td> <td>{}</td> <td>{}</td> </tr>'.format(v.id, v.serial_num, v.value, v.issued_time, v.used)
+  list_voucher += '''
+    </table>
+    </div>
+  '''
+
+  return head + generate + list_voucher
 
 @app.route('/signup', methods=['GET'])
 def show_signup():

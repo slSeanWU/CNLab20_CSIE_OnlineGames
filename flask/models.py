@@ -35,10 +35,10 @@ class CoinVoucher(db.Model):
     '''
     For top-ups
     '''
-    __tablename__ = 'coin_voucher'
+    __tablename__ = 'coin_voucher_new'
     id = db.Column(db.Integer, primary_key=True)
     serial_num = db.Column(db.String(64), unique=True, nullable=False)
-    value = db.Column(db.Integer, unique=True, nullable=False)
+    value = db.Column(db.Integer, nullable=False)
     issued_time = db.Column(db.DateTime, default=datetime.now)
     expiration_time = db.Column(db.DateTime)
     used = db.Column(db.Boolean, default=False, nullable=False)

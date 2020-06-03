@@ -16,7 +16,8 @@ def hello_world():
 def show_index():
     if current_user.is_authenticated:
         return redirect(url_for('main_menu'))
-    return render_template('index.html')
+    # return render_template('index.html')
+    return render_template('login.html')
 
 @app.route('/index', methods=['POST'])
 def login():
@@ -206,3 +207,9 @@ def create_user():
 
   flash('Signup successful!')
   return redirect(url_for('show_index'))
+
+# @app.route('/test')
+# def test():
+#     return render_template('login.html')
+
+

@@ -1,0 +1,37 @@
+.right-box{
+	display: inline-block;
+	float: right;
+	width: 30%;
+	margin-right: 4%;
+	height: 70vh;
+}
+.left-box{
+	display: inline-block;
+	float: left;
+	width: 60%;
+	height: 70vh;
+	margin-left: 4%;
+	padding: 0px;
+}
+.img-box{
+	display: inline-block;
+	width: 70%;
+	float: left;
+	margin: 0px;
+	height: 20vh;
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+#box_0{
+	background-image: url(../images/texas.jpg);
+}
+#box_1{
+	background-image: url(../images/blackjack.jpg);
+	margin-top: 4vh;
+	margin-left: 30%;
+	background-position: bottom;
+}
+#box_2{
+	background-image: url(../images/texas.jpg);
+	margin-top: 4vh;
+}

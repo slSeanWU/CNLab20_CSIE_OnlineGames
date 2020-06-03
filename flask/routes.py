@@ -78,12 +78,26 @@ def change_password():
 
 @app.route('/top_up', methods=['POST'])
 @login_required
-def top_up():
-    # TODO
+def top_up_authentication():
     # handle top-up authentication
-    serial_num = request.form.get('topup-serial-num')
-    return redirect(url_for('member_center'))
+    serial_num = request.form.get('topup-serial-num').strip()
 
+    query_res = CoinVoucher.query.filter_by(serial_num=serial_num)
+    if query_res.scalar() is not None and query_res.first().used is False:
+      voucher = query_res.first()
+      if voucher.expiration_time is not None and voucher.expiration_time < datetime.now():
+        flash('Top-up FAILED! Invalid serial number.')
+      else:
+        voucher.used = True
+        voucher.expiration_time = datetime.now()
+        user = UserInfo.query.filter_by(username=current_user.username).first()
+        user.coins += voucher.value
+        db.session.commit()
+        flash('Top-up successful! You have {} more coins now.'.format(voucher.value))
+    else:
+      flash('Top-up FAILED! Invalid serial number.')
+
+    return redirect(url_for('member_center'))
 
 @app.route('/main_menu', methods=['GET'])
 @login_required

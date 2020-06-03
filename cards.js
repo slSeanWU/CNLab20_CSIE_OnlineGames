@@ -42,4 +42,4 @@ function disp_card(card){
 	}
 	return result;
 }
-mid_public=[];
+mid_public=[new_card(),new_card(),new_card(),new_card(),new_card()];

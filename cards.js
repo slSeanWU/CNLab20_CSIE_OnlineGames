@@ -4,7 +4,7 @@ function Card(type, num) {
 }
 function new_card(){
 	var i = Math.floor(Math.random() * 52)+ 1;
-	var type_i = floor(i/13);
+	var type_i = floor((i-1)/13);
 	var num_i = i%13;
 	Card(type_i, num_i);
 }

@@ -11,18 +11,20 @@ from datetime import datetime
 For pages that run games.
 '''
 
-@app.route('slot_rules', methods=['GET'])
+@app.route('/slot_rules', methods=['GET'])
 @login_required
 def slot_rules():
   '''
   Displays the game's rules (accessible from main menu).
   '''
-  pass
+  user = UserInfo.query.filter_by(username=current_user.username).first()
+  return render_template('slot_rules.html', username=user.username, coins=user.coins)
 
-@app.route('slot_play', methods=['GET'])
+@app.route('/slot_play', methods=['GET'])
 @login_required
-def slot_rules():
+def slot_play():
   '''
   Displays the game panel & stats of current gameplay (e.g., bet, earnings ...).
   '''
-  pass
+  user = UserInfo.query.filter_by(username=current_user.username).first()
+  return render_template('slot_play.html', username=user.username, coins=user.coins)

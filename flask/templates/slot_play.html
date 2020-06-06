@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<title>CSIE Online Games: Slot Machine</title>
+
+<html>
+<div id="head">
+  <h1>CSIE Online Games --- Slot Machine</h1>
+  <h4>User: {{ username }} <br> Coins: {{ coins }}</h4>
+  <h4>Rds Played: {{ rounds_played }} || Total Bet: {{ total_bet }} || Total Earnings: {{ total_earnings }}</h4>
+  
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <ul class=flashes>
+      {% for message in messages %}
+        <li>{{ message }}</li>
+      {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+
+</div>
+
+<div id="game-panel">
+  <h2>The Slot Machine</h2>
+</div>
+
+<div id="bet">
+  <h2>The Bet</h2>
+  <p>Let users adjust their bet. (no. of paylines & amount of single bet)</p>
+  <a href="#">
+    <button>Spin!</button>
+  </a>
+  <a href="/main_menu">
+    <button>Leave game</button>
+  </a>
+</div>

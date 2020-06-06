@@ -207,9 +207,3 @@ def create_user():
 
   flash('Signup successful!')
   return redirect(url_for('show_index'))
-
-# @app.route('/test')
-# def test():
-#     return render_template('login.html')
-
-

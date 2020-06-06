@@ -16,6 +16,8 @@ class UserInfo(UserMixin, db.Model):
     registration_time = db.Column(db.DateTime, default=datetime.now)
     last_active_time = db.Column(db.DateTime)
 
+    slot_games = db.relationship('SlotGameRecord', backref='user_info', lazy=True)
+
     @property
     def password(self):
         raise AttributeError('password is not a readable attribute')
@@ -42,3 +44,18 @@ class CoinVoucher(db.Model):
     issued_time = db.Column(db.DateTime, default=datetime.now)
     expiration_time = db.Column(db.DateTime)
     used = db.Column(db.Boolean, default=False, nullable=False)
+
+class SlotGameRecord(db.Model):
+    '''
+    For slot game records
+    '''
+    __tablename__ = 'slot_game_record'
+    play_id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user_info.id'), nullable=False)
+    rounds_played = db.Column(db.Integer, nullable=False)
+    total_bet = db.Column(db.Integer, nullable=False)
+    total_earnings = db.Column(db.Integer, nullable=False)
+    balance = db.Column(db.Integer, nullable=False)
+    best_single_win = db.Column(db.Integer)
+    entry_time = db.Column(db.DateTime, nullable=False)
+    exit_time = db.Column(db.DateTime, default=datetime.now, nullable=False)

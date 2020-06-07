@@ -1,6 +1,6 @@
 from flask import current_app as app
 from flask import render_template, request, flash, redirect, url_for, json
-from models import UserInfo
+from models import UserInfo, SlotGameRecord
 from main import db
 from flask_login import login_user, logout_user, login_required, current_user
 
@@ -87,9 +87,23 @@ def slot_play():
 @app.route('/slot_spin', methods=['POST'])
 @login_required
 def slot_spin():
-  app.logger.info(request.form)
+  user = UserInfo.query.filter_by(username=current_user.username).first()
   num_plines = int(request.form.get('num-plines'))
   single_bet = int(request.form.get('single-bet'))
+  if user.coins < num_plines * single_bet:
+    json_obj = {
+      'rounds_played': int(request.form.get('rounds-played')),
+      'total_bet': int(request.form.get('total-bet')),
+      'total_earnings': int(request.form.get('total-earnings')),
+      'last_earnings': 0,
+      'slot': get_slot_spin(),
+      'winning_lines': []
+    }
+    flash('No enough coins. Time to TOP-UP!!')
+
+    return redirect(url_for('slot_play', json_str=json.dumps(json_obj)))
+
+  app.logger.info(request.form)
   rounds_played = int(request.form.get('rounds-played')) + 1
   total_bet = int(request.form.get('total-bet')) + num_plines * single_bet
 
@@ -108,13 +122,22 @@ def slot_spin():
 
   total_earnings = int(request.form.get('total-earnings')) + last_earnings
   json_obj = {
-      'rounds_played': rounds_played,
-      'total_bet': total_bet,
-      'total_earnings': total_earnings,
-      'last_earnings': last_earnings,
-      'slot': slot,
-      'winning_lines': winning_lines
+    'rounds_played': rounds_played,
+    'total_bet': total_bet,
+    'total_earnings': total_earnings,
+    'last_earnings': last_earnings,
+    'slot': slot,
+    'winning_lines': winning_lines
   }
   app.logger.info(json_obj)
+
+  game_record = SlotGameRecord(
+    user_id=user.id,
+    bet_amount=num_plines * single_bet,
+    earnings=last_earnings
+  )
+  user.coins += (last_earnings - num_plines * single_bet)
+  db.session.add(game_record)
+  db.session.commit()
 
   return redirect(url_for('slot_play', json_str=json.dumps(json_obj)))

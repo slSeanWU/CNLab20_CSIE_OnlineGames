@@ -7,17 +7,6 @@
   <h1>CSIE Online Games --- Slot Machine</h1>
   <h4>User: {{ username }} <br> Coins: {{ coins }}</h4>
   <h4>Rds Played: {{ rounds_played }} || Total Bet: {{ total_bet }} || Total Earnings: {{ total_earnings }} || Last Round Earnings: {{ last_earnings }}</h4>
-  
-  {% with messages = get_flashed_messages() %}
-    {% if messages %}
-      <ul class=flashes>
-      {% for message in messages %}
-        <li>{{ message }}</li>
-      {% endfor %}
-      </ul>
-    {% endif %}
-  {% endwith %}
-
 </div>
 
 <div id="game-panel">
@@ -40,6 +29,17 @@
     <input type="hidden" value="{{ total_earnings }}" name="total-earnings"/>
     <input type="hidden" value="{{ last_earnings }}" name="last-earnings"/> <br>
     <button type="submit">Spin!</button>
+  
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul class=flashes>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
   </form>
 </div>
 

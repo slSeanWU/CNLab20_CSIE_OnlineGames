@@ -20,6 +20,7 @@
 </div>
 
 <div id="manage">
+  <h2>Manage Your Account</h2>
   <h3>Change Username</h3>
   <form action="/change_username" method="post" id="change-username">
     <input type="text" required autocomplete="off" name="new-username"/>
@@ -47,6 +48,16 @@
   <a href="/playad">
     <button>Watch An Ad</button>
   </a>
+</div>
+
+<div id="stats">
+  <h2>Your Statistics</h2>
+  <h3>Slot Machine</h3>
+  <h4>
+    Rounds Played: {{ slot_rds }} <br> 
+    Total Coins Bet: {{ slot_bet }} <br>
+    Total Earnings: {{ slot_earnings }}
+  </h4>
 </div>
 
 <a href="/main_menu">

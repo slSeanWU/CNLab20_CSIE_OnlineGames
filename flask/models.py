@@ -49,13 +49,9 @@ class SlotGameRecord(db.Model):
     '''
     For slot game records
     '''
-    __tablename__ = 'slot_game_record'
+    __tablename__ = 'slot_game_record_single_new'
     play_id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user_info.id'), nullable=False)
-    rounds_played = db.Column(db.Integer, nullable=False)
-    total_bet = db.Column(db.Integer, nullable=False)
-    total_earnings = db.Column(db.Integer, nullable=False)
-    balance = db.Column(db.Integer, nullable=False)
-    best_single_win = db.Column(db.Integer)
-    entry_time = db.Column(db.DateTime, nullable=False)
-    exit_time = db.Column(db.DateTime, default=datetime.now, nullable=False)
+    bet_amount = db.Column(db.Integer, nullable=False)
+    earnings = db.Column(db.Integer, nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.now, nullable=False)

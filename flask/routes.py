@@ -1,8 +1,9 @@
 from flask import current_app as app
 from flask import render_template, request, flash, redirect, url_for
-from models import UserInfo, CoinVoucher
+from models import UserInfo, CoinVoucher, SlotGameRecord
 from main import db
 from flask_login import login_user, logout_user, login_required, current_user
+from sqlalchemy.sql import func
 
 import sys
 from datetime import datetime
@@ -42,7 +43,23 @@ def login():
 @login_required
 def member_center():
     user = UserInfo.query.filter_by(username=current_user.username).first()
-    return render_template('member_center.html', username=user.username, coins=user.coins)
+    
+    # query user statistics
+    slot_results = SlotGameRecord.query.with_entities(
+        func.sum(SlotGameRecord.bet_amount).label('slot_bet'),
+        func.sum(SlotGameRecord.earnings).label('slot_earnings'),
+        func.count().label('slot_rds')
+      ).filter_by(
+        user_id=user.id
+      ).first()
+
+    return render_template('member_center.html', 
+      username=user.username,
+      coins=user.coins,
+      slot_rds=slot_results.slot_rds,
+      slot_bet=slot_results.slot_bet or 0,
+      slot_earnings=slot_results.slot_earnings or 0
+    )
 
 
 @app.route('/change_username', methods=['POST'])

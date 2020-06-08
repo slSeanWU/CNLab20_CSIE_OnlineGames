@@ -24,13 +24,15 @@ def show_index():
 def login():
     email_rec = request.form.get('email')
     passwd_rec = request.form.get('passwd')
+    app.logger.info(request.form)
 
     user = UserInfo.query.filter_by(email=email_rec).first()
     if user:
         if user.verify_password(passwd_rec):
-            # TODO
-            # client can check remember me or not
-            login_user(user, remember=True)
+            if request.form.get('remember-me') is not None:
+              login_user(user, remember=True)
+            else:
+              login_user(user, remember=False)
             return redirect(url_for('main_menu'))
         else:
             flash('Login FAILED! Wrong Email or Password')

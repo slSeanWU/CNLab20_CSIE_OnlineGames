@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<title>CSIE Online Games: BlackJack</title>
+
+<html>
+<div id="head">
+  <h1>CSIE Online Games --- BlackJack</h1>
+  <h4>User: {{ username }} <br> Coins: {{ coins }}</h4>
+  
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <ul class=flashes>
+      {% for message in messages %}
+        <li>{{ message }}</li>
+      {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+
+</div>
+
+<div id="rule">
+  <h2>Rules</h2>
+  <p>Display some rules here.</p>
+  <h2>Pay Table</h2>
+  <p>Show the pay table.</p>
+</div>
+
+<div id="ready">
+  <h2>Are You Ready?</h2>
+  <a href="/blackjack_play">
+    <button>Play!</button>
+  </a>
+  <a href="/main_menu">
+    <button>Go back to main menu</button>
+  </a>
+</div>

@@ -1,5 +1,8 @@
 from flask import Flask
+from flask_socketio import SocketIO
 from models import db, login_manager
+
+socketio = SocketIO()
 
 def create_app():
     app = Flask(__name__)
@@ -9,15 +12,17 @@ def create_app():
 
     db.init_app(app)
     with app.app_context():
-        import routes, games
+        import routes, games, blackjack
         db.create_all()
         db.session.commit()
 
     login_manager.init_app(app)
     login_manager.login_view = 'show_index'
+    
+    socketio.init_app(app)
 
     return app
 
 if __name__ == '__main__':
     app = create_app()
-    app.run('127.0.0.1', 5000, debug=True)
+    socketio.run(app, host='127.0.0.1', port=5000, debug=True)

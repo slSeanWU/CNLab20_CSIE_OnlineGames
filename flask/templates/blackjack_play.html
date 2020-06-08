@@ -8,7 +8,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.dev.js"></script>
     <script type="text/javascript" charset="utf-8">
         $(document).ready(function(){
-            namespace = '/test';
+            namespace = '/blackjack';
             var socket = io(namespace);
 
             socket.on('connect', function(){
@@ -49,7 +49,7 @@
                     $('#log').append('<br>' + $('<div/>').text('Dealer Bust!').html());
                 }
             });
-
+/*
             $('form#emit').submit(function(event){
                 socket.emit('client_event', {data: $('#emit_data').val()});
                 return false;
@@ -59,7 +59,7 @@
                 socket.emit('disconnect_request');
                 return false;
             });
-
+*/
             $('form#start').submit(function(event){
                 socket.emit('start_game');
                 return false;

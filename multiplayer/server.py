@@ -142,7 +142,7 @@ def who_win(game_status):
                         hands['One_Pair'] += keys[::-1]
 
                 if 0 in keys:    hands['High'] = [keys[0]] + keys[1:][::-1]
-                else:    hands['High'] = keys
+                else:    hands['High'] = keys[::-1]
 
             else:
                 keys = list(cards_num.keys())

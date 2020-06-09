@@ -1,0 +1,26 @@
+.signup-content{
+	padding: 2%;
+}
+.form-submit{
+	margin-top: 5px;
+	padding: 10px 10px;
+}
+.box{
+	margin: 2vh 2.9% ;
+	width: 44%;
+	display: inline-block;
+	height: 44vh;
+	overflow: scroll;
+}
+#box-0{
+	float: left;
+}
+#box-1{
+	float: right;
+}
+#box-2{
+	float: left;
+}
+#box-3{
+	float: right;
+}

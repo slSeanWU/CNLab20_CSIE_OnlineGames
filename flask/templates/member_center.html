@@ -1,67 +1,120 @@
 <!DOCTYPE html>
-<meta charset="UTF-8">
-<title>CSIE Online Games</title>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Member Center</title>
 
-<html>
-<div id="head">
-  <h1>CSIE Online Games --- Member Center</h1>
-  <h4>User: {{ username }} <br> Coins: {{ coins }}</h4>
-  
-  {% with messages = get_flashed_messages() %}
-    {% if messages %}
-      <ul class=flashes>
-      {% for message in messages %}
-        <li>{{ message }}</li>
-      {% endfor %}
-      </ul>
-    {% endif %}
-  {% endwith %}
+    <!-- Font Icon -->
+    <link rel="stylesheet" href="static/fonts/material-icon/css/material-design-iconic-font.min.css">
 
-</div>
+    <!-- Main css -->
+    <link rel="stylesheet" href="static/css/style.css">
+    <link rel="stylesheet" href="static/css/custom_style.css">
+    <link rel="stylesheet" href="static/css/member-center.css">
+</head>
+<body>
 
-<div id="manage">
-  <h2>Manage Your Account</h2>
-  <h3>Change Username</h3>
-  <form action="/change_username" method="post" id="change-username">
-    <input type="text" required autocomplete="off" name="new-username"/>
-    <button type="submit">Change</button>
-  </form>
-
-  <h3>Change Password</h3>
-  <form action="/change_password" method="post" id="change-password">
-    <label>Old password</label>
-    <input type="password" required autocomplete="off" name="old-passwd"/>
-    <label>New password</label>
-    <input type="password" required autocomplete="off" name="new-passwd"/>
-    <label>Confirm new password</label>
-    <input type="password" required autocomplete="off" name="new-passwd-confirm"/>
-    <button type="submit">Change</button>
-  </form>
-
-  <h3>Top-up Coins</h3>
-  <form action="/top_up" method="post" id="topup">
-    <label>Enter your pre-issued serial number</label>
-    <input type="text" required autocomplete="off" name="topup-serial-num"/>
-    <button type="submit">Authenticate</button>
-  </form>
-  ~~ OR ~~ <br>
-  <a href="/playad">
-    <button>Watch An Ad</button>
-  </a>
-</div>
-
-<div id="stats">
-  <h2>Your Statistics</h2>
-  <h3>Slot Machine</h3>
-  <h4>
-    Rounds Played: {{ slot_rds }} <br> 
-    Total Coins Bet: {{ slot_bet }} <br>
-    Total Earnings: {{ slot_earnings }}
-  </h4>
-</div>
-
-<a href="/main_menu">
-    <button>Back to Main Menu</button>
-</a>
-
+    <div class="main">
+        <script type="text/javascript">
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+                {% for message in messages %}
+                  alert("{{ message }}");
+                {% endfor %}
+              {% endif %}
+            {% endwith %}
+            
+        </script>
+        <div class="container round-shadow box" id="box-0">
+            <div class="signup-content">
+                <div class="signup-form">
+                    <h3>Slot Machine</h3>
+                    <h4>
+                    Rounds Played: {{ slot_rds }} <br> 
+                    Total Coins Bet: {{ slot_bet }} <br>
+                    Total Earnings: {{ slot_earnings }}
+                    </h4>
+                </div>
+            </div>
+        </div>
+        <div class="container round-shadow box" id="box-1">
+            <div class="signup-content">
+                <div class="signup-form">
+                    <h3 class="form-title">Change Username</h3>
+                    <form method="POST" class="register-form" action="/change_username" id="change-username">
+                        <div class="form-group">
+                            <label for="new-username"><i class="zmdi zmdi-account material-icons-name"></i></label>
+                            <input type="text" required autocomplete="off" name="new-username" placeholder="New Username" value="{{ username }}" />
+                            
+                        </div>
+                        <div class="form-group form-button">
+                            <input type="submit" class="form-submit" value="Change Username"/>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="container round-shadow box" id="box-2">
+            <div class="signup-content">
+                <div class="signup-form">
+                    <h3 class="form-title">Change Password</h3>
+                    <form action="/change_password" method="post" id="change-password" class="register-form">
+                        <div class="form-group">
+                            <label for="old-passwd"><i class="zmdi zmdi-lock-open"></i></label>
+                            <input type="password" required autocomplete="off" name="old-passwd" placeholder="Old Password"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="new-passwd"><i class="zmdi zmdi-lock"></i></label>
+                            <input type="password" required autocomplete="off" name="new-passwd" placeholder="New Password"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="new-passwd-confirm"><i class="zmdi zmdi-lock-outline"></i></label>
+                            <input type="password" required autocomplete="off" name="new-passwd-confirm" placeholder="Confirm Password"/>
+                        </div>
+                        <div class="form-group form-button">
+                            <input type="submit" class="form-submit" value="Change Password"/>
+                        </div>
+                    </form>
+                        
+                        
+                   
+                </div>
+            </div>
+        </div>
+        <div class="container round-shadow box" id="box-3">
+            <div class="signup-content">
+                <div class="signup-form">
+                    <h3 class="form-title">Top-up Coins</h3>
+                    <form action="/top_up" method="post" id="topup">
+                        <div class="form-group">
+                            <label for="topup-serial-num"><i class="zmdi zmdi-key"></i></label>
+                            <input type="text" required autocomplete="off" name="topup-serial-num" laceholder="Top-up serial numbers"/>
+                        </div>
+                        <div class="form-group form-button">
+                            <input type="submit" class="form-submit" value="Authenticate"/>
+                        </div>
+                    </form>
+                    <h3 >Or</h3>
+                    <div class="form-group form-button" >
+                        <a href="/playad">
+                            <input type="submit" class="form-submit" value="Watch An Ad" style="background-color: #B1B479;"/>
+                        </a>
+                    </div>
+                    
+                    
+                </div>
+            </div>
+        </div>
+        <div id="user_info" class="round-shadow">
+            <p style="margin-top: 25%;">Welcome {{ username }}!</p>
+            <p style="background-color: #FFC408;">Coins: {{ coins }}</p>
+            <p style="margin-top: 10%; background-color: #255359;" ><a href="/main_menu">Main Menu</a></p>
+        </div>
+        
+    <!-- JS -->
+    <script src="static/js/jquery.min.js"></script>
+    <script src="static/js/main.js"></script>
+</body><!-- This templates was made by Colorlib (https://colorlib.com) -->
 </html>

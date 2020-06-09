@@ -1,0 +1,67 @@
+html,body{
+	margin: 0px;
+	border: 0px;
+	padding: 0px;
+	height: 100%;
+	width: 100%;
+}
+
+.main_menu.row-box{
+	height: 45%;
+	margin: 2% 0px;
+	padding: 0px;
+	border: 0px;
+	opacity: 1;
+	cursor: pointer;
+	transition: all 0.3s ease-in;
+	position: relative;
+}
+.mask{
+	opacity: 0;
+	width: 100%;
+	background-color: #333;
+	height: calc(50% - 49px);
+	transition: all 0.3s ease-in;
+}
+.mask.top{
+	border-top-left-radius: 20px;
+	border-top-right-radius: 20px;
+}
+.mask.bottom{
+	border-bottom-left-radius: 20px;
+	border-bottom-right-radius: 20px;
+}
+.main_menu.row-box:hover .mask{
+	opacity: 0.7;
+	transition: all 0.3s ease-in;
+}
+
+/*.main_menu.row-box:hover{
+	padding-top: 0px;
+	transition: all 0.3s ease-in;
+}*/
+
+.main_menu.row-box:hover p{
+	opacity: 1;
+	transition: all 0.3s ease-in;
+}
+.main_menu.row-box > p{
+	opacity: 0.9;
+	width: 100%;
+	font-size: 60px;
+	line-height: 100px;
+	transition: all 0.3s ease-in;
+}
+
+#box-0{
+	background-image: url(../images/slots.jpg);	
+}
+#box-1{
+	background-image: url(../images/blackjack.jpg);	
+}
+#box-2{
+	background-image: url(../images/texas.jpg);	
+}
+#box-3{
+	background-image: url(../images/manage-account.jpg);	
+}

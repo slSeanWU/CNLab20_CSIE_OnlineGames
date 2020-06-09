@@ -1,40 +1,63 @@
 <!DOCTYPE html>
-<meta charset="UTF-8">
-<title>CSIE Online Games</title>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>CSIE online casino</title>
 
-<html>
-<div id="head">
-  <h1>CSIE Online Games --- Main Menu</h1>
-  <h4>Welcome, {{ username }}.    Your coins: {{ coins }}.</h4>
-  
-  {% with messages = get_flashed_messages() %}
-    {% if messages %}
-      <ul class=flashes>
-      {% for message in messages %}
-        <li>{{ message }}</li>
-      {% endfor %}
-      </ul>
-    {% endif %}
-  {% endwith %}
+    <!-- Font Icon -->
+    <link rel="stylesheet" href="static/fonts/material-icon/css/material-design-iconic-font.min.css">
 
-</div>
+    <!-- Main css -->
+    <link rel="stylesheet" href="static/css/style.css">
+    <link rel="stylesheet" href="static/css/custom_style.css">
+    <link rel="stylesheet" href="static/css/main_menu.css">
+</head>
+<body>
+  <script type="text/javascript">
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          {% for message in messages %}
+            alert("{{ message }}");
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+  </script>
+    <div class="main">
+      <div class="main_menu left-box">
+          <div class="main_menu row-box round-shadow img-box" id="box-0">
+            <div class="mask top"></div>
+            <p><a href="/slot_rules">Play Slots</a></p>
+            <div class="mask bottom"></div>
+          </div>
+          <div class="main_menu row-box round-shadow img-box" id="box-1">
+            <div class="mask top"></div>
+            <p><a href="/blackjack_rules">Play Blackjack</a></p>
+            <div class="mask bottom"></div>
+          </div>
+      </div>
+      <div class="main_menu right-box">
+          <div class="main_menu row-box round-shadow img-box" id="box-2">
+            <div class="mask top"></div>
+            <p><a href="/texas_rules">Play Texas</a></p>
+            <div class="mask bottom"></div>
+          </div>
+          <div class="main_menu row-box round-shadow img-box" id="box-3">
+            <div class="mask top"></div>
+            <p><a href="/member_center">Manage Account</a></p>
+            <div class="mask bottom"></div>
+          </div>
+      </div>
 
-<div id="menu">
-  <a href="/slot_rules">
-    <button>Play Slots</button>
-  </a><br>
-  <a href="/blackjack_rules">
-    <button>Play Blackjack</button>
-  </a><br>
-  <a href="/texas_rules">
-    <button>Play Texas hold'em poker</button>
-  </a><br>
-  <a href="/member_center">
-    <button>Manage account</button>
-  </a><br>
-  <a href="/logout">
-    <button>Log out</button>
-  </a>
-</div>
-
+    </div>
+    <div id="user_info" class="round-shadow">
+      <p style="margin-top: 25%;">Welcome {{ username }}!</p>
+      <p style="background-color: #FFC408;">Coins: {{ coins }}</p>
+      <p style="margin-top: 10%;background-color: #255359;" ><a href="/logout">Log Out</a></p>
+    </div>
+    <!-- JS -->
+    <script src="static/js/jquery.min.js"></script>
+    <script src="static/js/main.js"></script>
+</body><!-- This templates was made by Colorlib (https://colorlib.com) -->
 </html>

@@ -1,26 +1,52 @@
+a{
+	text-decoration:none;
+	color: inherit;
+}
 .right-box{
 	display: inline-block;
 	float: right;
-	width: 30%;
-	margin-right: 4%;
-	height: 70vh;
 }
 .left-box{
 	display: inline-block;
 	float: left;
+	padding: 0px;
+}
+.row-box{
+	width: 100%;
+	height: 47.8%;
+	margin: 0px;
+}
+.login.right-box{
+	width: 30%;
+	margin-right: 4%;
+	height: 70vh;
+}
+.login.left-box{
 	width: 60%;
 	height: 70vh;
 	margin-left: 4%;
-	padding: 0px;
+}
+.main_menu.right-box{
+	width: 45%;
+	margin-right: 4%;
+	height: 100vh;
+}
+.main_menu.left-box{
+	width: 45%;
+	height: 100vh;
+	margin-left: 4%;
 }
 .img-box{
 	display: inline-block;
-	width: 70%;
-	float: left;
 	margin: 0px;
-	height: 20vh;
 	background-repeat: no-repeat;
 	background-size: cover;
+}
+.login.img-box{
+	overflow: hidden;
+	width: 70%;
+	float: left;
+	height: 20vh;
 }
 #box_0{
 	background-image: url(../images/texas.jpg);
@@ -34,4 +60,34 @@
 #box_2{
 	background-image: url(../images/texas.jpg);
 	margin-top: 4vh;
+}
+/*For user info*/
+p{
+	position: relative;
+	color: white;
+	margin: auto;
+	height: auto;
+	text-align: center;
+	background-color: #333;
+}
+#user_info{
+	position: fixed;
+	border-radius: 50%;
+	height: 36vh;
+	width: 36vh;
+	left: calc(50% - 18vh);
+	top: calc(50% - 18vh);
+	transition: all 0.2s ease-in;
+	/*background-color: red;*/
+}
+#user_info:hover{
+	transform: scale(1.2);
+	transition: all 0.2s ease-in;
+}
+#user_info > p{
+	margin-top: 2%;
+	width: 70%;
+	font-size: 20px;
+	line-height: 40px;
+	border-radius: 20px;
 }

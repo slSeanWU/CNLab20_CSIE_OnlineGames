@@ -26,8 +26,6 @@ def client_left(client, server):
 # Called when a client sends a message
 def message_received(client, server, message):
     print("Client(%d) said: %s" % (client['id'], message))
-    # test message
-    server.send_message_to_all("#IO lalala print me or die")
 
     m = message.split()
     if m[0] == '#NAME':
@@ -141,7 +139,7 @@ def who_win(game_status):
                     else:
                         hands['One_Pair'].append(keys[values.index(2)])
                         del keys[values.index(2)]
-                        hands['One_Pair'] += keys
+                        hands['One_Pair'] += keys[::-1]
 
                 if 0 in keys:    hands['High'] = [keys[0]] + keys[1:][::-1]
                 else:    hands['High'] = keys

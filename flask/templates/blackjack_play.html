@@ -1,6 +1,6 @@
 <!DOCTYPE HTML>
 <meta charset="UTF-8">
-<title>CSIE Online Games: BlackJack</title>
+<title>CSIE Online Games: Black Jack</title>
 
 <html>
 <head>
@@ -10,9 +10,11 @@
         $(document).ready(function(){
             namespace = '/blackjack';
             var socket = io(namespace);
+            var coins_now = Number({{ coins }});
+            var bet_show = 0;
 
             socket.on('connect', function(){
-                socket.emit('connect_event', {data: 'I\'m connected!'});
+                socket.emit('connect_event', {'data': {{ username|tojson }} + ' Connected!'});
             });
 
             socket.on('start', function(msg){
@@ -49,9 +51,23 @@
                     $('#log').append('<br>' + $('<div/>').text('Dealer Bust!').html());
                 }
             });
+
+            socket.on('result', function(msg){
+                alert(msg.data)
+                if(msg.data == "Dealer Win!"){
+                    coins_now -= Number(bet_show)
+                }else if(msg.data =="You Win!"){
+                    coins_now += Number(bet_show)
+                }
+                bet_show = 0
+                document.getElementById("show_result").innerHTML= "<h4>Last time: " + msg.res + "</h4>";
+                $('form#start').find(':input[type=submit]').prop('disabled', false);
+                $('form#start').find(':input[type=number]').prop('disabled', false);
+                document.getElementById("head").innerHTML='<h1>CSIE Online Games --- Black Jack</h1><h4>User: {{ username }}<br> Coins: '+coins_now+'</h4>'
+            });
 /*
             $('form#emit').submit(function(event){
-                socket.emit('client_event', {data: $('#emit_data').val()});
+                socket.emit('client_event', {'data': $('#emit_data').val()});
                 return false;
             });
 
@@ -61,7 +77,10 @@
             });
 */
             $('form#start').submit(function(event){
-                socket.emit('start_game');
+                $('form#start').find(':input[type=submit]').prop('disabled', true);
+                $('form#start').find(':input[type=number]').prop('disabled', true);
+                bet_show = $('#bet').val()
+                socket.emit('start_game', {'bet_coin': bet_show});
                 return false;
             });
 
@@ -82,14 +101,14 @@
 </head>
 <body>
     <div id="head">
-      <h1>CSIE Online Games --- BlackJack</h1>
+      <h1>CSIE Online Games --- Black Jack</h1>
       <h4>User: {{ username }} <br> Coins: {{ coins }}</h4>
     </div>
 
+    <div id='show_result'></div>
+
     <p>Async mode is: <b>{{ async_mode }}</b></p>
-    <h2>Logs:</h2>
-    <div id="log"></div>
-    <h2>Send:</h2>
+    <h2>How many coins to bet?:</h2>
 <!--    
     <form id = "emit" method="POST" action='#'>
         <input type="text" name="emit_data" id="emit_data" placeholder="Message">
@@ -100,6 +119,7 @@
     </form>
 -->
     <form id = "start" method="POST" action="#">
+        <input type="number" min="5" value="5" name="bet" id="bet" placeholder="How many coins to bet?">
         <input type="submit" value="Start">
     </form>
     <form id = "take" method="POST" action="#">
@@ -108,8 +128,13 @@
     <form id = "stop" method="POST" action="#">
         <input type="submit" value="Stop" disabled>
     </form>
+
+    <h2>Logs:</h2>
+    <div id="log"></div>
+
     <h2>Player:</h2>
     <div id="player"></div>
+
     <h2>Dealer:</h2>
     <div id="dealer"></div>
 

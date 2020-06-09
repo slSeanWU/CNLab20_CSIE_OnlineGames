@@ -9,6 +9,7 @@ import random
 cards = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
 cards_player = []
 cards_dealer = []
+bet = 0
 
 def blackjack_sum(cards_list):
     soft_sum = 0
@@ -66,15 +67,17 @@ def test_disconnect():
     print('Client disconnected', request.sid)
 
 @socketio.on('start_game', namespace='/blackjack')
-def start_game():
+def start_game(message):
+    global bet
     global cards_player
-    global cards_dealer 
+    global cards_dealer
+    bet = message['bet_coin']
     cards_player.clear()
     cards_dealer.clear()
     cards_player = random.choices(cards, k=2)[:]
     cards_dealer = random.choices(cards, k=2)[:]
     cards_dealer_show = cards_dealer.copy()
-    cards_dealer_show[1] = 'X'
+    cards_dealer_show[0] = 'X'
     emit('start', {'player': cards_player, 'dealer': cards_dealer_show})
 
 
@@ -93,16 +96,29 @@ def player_stop():
         cards_dealer.append(random.choice(cards))
     emit('dealer_picked', {'cards': cards_dealer, 'total': blackjack_sum(cards_dealer)})
 
+    user = current_user
+
     player_total = blackjack_sum(cards_player)
     dealer_total = blackjack_sum(cards_dealer)
     if player_total > 21:
+        user.coins -= int(bet)
         emit('server_response', {'data': 'Dealer Win!'})
+        emit('result', {'data': 'Dealer Win!', 'res': 'Lose ' + bet + ' Coins'})
     elif dealer_total > 21:
-        emit('server_response', {'data': 'Player Win!'})
+        user.coins += int(bet)
+        emit('server_response', {'data': 'You Win!'})
+        emit('result', {'data': 'You Win!', 'res': 'Win ' + bet + ' Coins'})
     else:
-        if dealer_total > player_total:            
+        if dealer_total > player_total:
+            user.coins -= int(bet)            
             emit('server_response', {'data': 'Dealer Win!'})
+            emit('result', {'data': 'Dealer Win!', 'res': 'Lose ' + bet + ' Coins'})
         elif player_total > dealer_total:
-            emit('server_response', {'data': 'Player Win!'})
+            user.coins += int(bet)            
+            emit('server_response', {'data': 'You Win!'})
+            emit('result', {'data': 'You Win!', 'res': 'Win ' + bet + ' Coins'})
         else:
-            emit('server_response', {'data': 'Tie!'})
+            emit('server_response', {'data': 'Draw!'})
+            emit('result', {'data': 'Draw!'})
+
+    db.session.commit()

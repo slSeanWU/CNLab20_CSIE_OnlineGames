@@ -13,21 +13,21 @@ bet = 0
 
 def blackjack_sum(cards_list):
     soft_sum = 0
-    hard_sum = 0
+    num_of_A = 0
     for i in cards_list:
         if i == 'A':
             soft_sum += 11
-            hard_sum += 1
+            num_of_A += 1
         elif i == 'J' or i == 'Q' or i == 'K':
             soft_sum += 10
-            hard_sum += 10
         else:
             soft_sum += int(i)
-            hard_sum += int(i)
     
-    if soft_sum > 21:
-        return hard_sum
+    while soft_sum > 21 and num_of_A > 0:
+        num_of_A -= 1
+        soft_sum -= 10
     return soft_sum
+
 
 @app.route('/blackjack_rules', methods=['GET'])
 @login_required
@@ -42,6 +42,7 @@ def blackjack_rules():
 @login_required
 def blackjack_play():
     user = current_user
+    #return render_template('blackjack_play.html', username=user.username, coins=user.coins)
     return render_template('blackjack_play.html', async_mode=socketio.async_mode, username=user.username, coins=user.coins)
 
 @socketio.on('connect_event', namespace='/blackjack')

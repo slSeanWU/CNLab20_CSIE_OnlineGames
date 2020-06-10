@@ -5,7 +5,7 @@ from main import db
 from flask_login import login_user, logout_user, login_required, current_user
 
 from datetime import datetime
-from random import randrange
+from random import randrange, random, choice
 import numpy as np
 
 '''
@@ -44,6 +44,25 @@ def get_slot_spin():
   return np.random.choice(
     icons, size=(3, 3), p=icon_probs
   ).tolist()
+
+def cheat_user(slot, line, is_pline, winlines):
+  '''
+  Hee hee...
+  '''
+  if not is_pline:
+    for c in range(3):
+      rand = random()
+      if rand < 1/8:
+        slot[line][c] = 0
+      elif rand < 1/3:
+        slot[line][c] = choice([1, 2])
+  elif line not in winlines:
+    if 0 not in slot[line] and random() < 1/8:
+      slot[line][c] = 0
+    elif 1 not in slot[line] and random() < 1/4:
+      slot[line][c] = choice([1, 2])
+
+  return slot
 
 ## routes
 @app.route('/slot_rules', methods=['GET'])
@@ -119,6 +138,15 @@ def slot_spin():
   if num_plines >= 3:
     last_earnings += single_bet * get_slot_prize(2, slot)
     winning_lines.append(2)
+
+  # place more "high-paying" icons in if they don't affect the results XD
+  for l in range(3):
+    if l == 0:
+      slot = cheat_user(slot, 0, num_plines >= 2, winning_lines)
+    elif l == 1:
+      slot = cheat_user(slot, 1, num_plines >= 1, winning_lines)
+    else:
+      slot = cheat_user(slot, 2, num_plines >= 3, winning_lines)
 
   total_earnings = int(request.form.get('total-earnings')) + last_earnings
   json_obj = {

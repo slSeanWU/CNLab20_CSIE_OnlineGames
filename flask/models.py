@@ -17,6 +17,7 @@ class UserInfo(UserMixin, db.Model):
     last_active_time = db.Column(db.DateTime)
 
     slot_games = db.relationship('SlotGameRecord', backref='user_info', lazy=True)
+    topup_records = db.relationship('TopUpRecord', backref='user_info', lazy=True)
 
     @property
     def password(self):
@@ -44,6 +45,18 @@ class CoinVoucher(db.Model):
     issued_time = db.Column(db.DateTime, default=datetime.now)
     expiration_time = db.Column(db.DateTime)
     used = db.Column(db.Boolean, default=False, nullable=False)
+
+class TopUpRecord(db.Model):
+    '''
+    For top-up records
+    '''
+    __tablename__ = 'topup_record'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user_info.id'), nullable=False)
+    used_serial_num = db.Column(db.String(64), unique=True, nullable=False)
+    value = db.Column(db.Integer, nullable=False)
+    coins_after = db.Column(db.Integer, nullable=False)
+    used_time = db.Column(db.DateTime, default=datetime.now, nullable=False)
 
 class SlotGameRecord(db.Model):
     '''

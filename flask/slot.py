@@ -9,11 +9,11 @@ from random import randrange
 import numpy as np
 
 '''
--- games.py
-For pages that run games.
+-- slot.py
+For pages that run the slot machine game.
 '''
 
-## helpers (for slot machine)
+## helpers
 icons = [x for x in range(8)]
 icon_probs = [1/30, 1/15, 1/15, 1/7.5, 1/7.5, 1/7.5, 1/5, 7/30]
 prizes = [777, 100, 50, 25, 10, 15, 8, 4, 2, 0]

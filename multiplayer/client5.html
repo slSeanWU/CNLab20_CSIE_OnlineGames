@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>html5 websocket特性</title>
+        <style>
+            body{
+                overflow: hidden;
+            }
+            h2{
+                margin-top: 30px;
+                text-align: center;
+                background-color: #393D49;
+                color: #fff;
+                ont-weight: normal;
+            padding: 15px 0
+            }
+            #chat{
+                text-align: center;
+            }
+            #win{
+                margin-top: 20px;
+                text-align: center;
+            }
+            #sse{
+                margin-top: 10px;
+                text-align: center;
+            }
+            #sse button{
+                background-color: #009688;
+                color: #fff;
+                height: 40px;
+                border: 0;
+                border-radius: 3px 3px;
+                padding-left: 10px;
+                padding-right: 10px;
+                cursor: pointer;
+            }
+        </style>
+        <script src="http://code.jquery.com/jquery-1.12.4.min.js"></script>
+    </head>
+    <body>
+        <h2>聊天室</h2>
+            <div id="chat">
+                <textarea id="history" cols="60" rows="20"></textarea>
+            </div>
+
+            <div id="win">
+                <textarea id="messagewin" cols="10" rows="1"></textarea>
+            </div>
+
+            <div id="status">
+                <textarea id="game_status" cols="30" rows="10"></textarea>
+            </div>
+
+            <div id="call">
+                <button onclick="call()">CALL</button>
+            </div>
+
+            <div id="raise">
+                <button onclick="raise()">RAISE</button>
+            </div>
+
+            <div id="fold">
+                <button onclick="fold()">FOLD</button>
+            </div>
+
+            <div id="check">
+                <button onclick="check()">CHECK</button>
+            </div>
+
+            <div id="allin">
+                <button onclick="allin()">ALL-IN</button>
+            </div>
+
+        <script type="text/javascript">
+            var oHistory = $('#history');
+            var oWin = $('#messagewin');
+            var oStatus = $('#game_status');
+            var now_bid = 0;
+            var my_bid = 0;
+            var chip = 0;
+            var hand = [];
+            var board = [];
+            var action = false;
+
+            if ("WebSocket" in window){
+                console.log("您的瀏覽器支援 WebSocket!");
+                var ws = new WebSocket("ws://127.0.0.1:9001");
+                ws.onopen = function(){
+                    console.log("websocket 已連線上");
+                    //var username = flask['username'];
+                    ws.send('#NAME ' + 'eee');
+                }
+
+                ws.onmessage = function (evt) {
+                    var dataReceive = evt.data;
+                    if (dataReceive.match("#IO") != null)
+                        $('#history').val($('#history').val()+dataReceive.substring(4,dataReceive.length)+"\n");
+                    else if (dataReceive.match("#BID") != null)
+                    {
+                        now_bid = parseInt(dataReceive.split(" ")[1]);
+                        oStatus.val("Board: "+board.toString()+"\n" + "Hand: "+hand.toString()+"\n" + "now bid: "+now_bid+"\n" + "my bid: "+my_bid+"\n" + "chip: "+chip+"\n");
+                    }
+                    else if (dataReceive.match("#BLIND") != null)
+                    {
+                        chip -= parseInt(dataReceive.split(" ")[1])
+                        my_bid += parseInt(dataReceive.split(" ")[1])
+                        oStatus.val("Board: "+board.toString()+"\n" + "Hand: "+hand.toString()+"\n" + "now bid: "+now_bid+"\n" + "my bid: "+my_bid+"\n" + "chip: "+chip+"\n");
+                    }
+                    else if (dataReceive.match("#HAND") != null)
+                    {
+                        // new game
+                        hand = []
+                        board = []
+                        my_bid = 0
+                        hand.push(dataReceive.split(" ")[1]);
+                        hand.push(dataReceive.split(" ")[2]);
+                    }
+                    else if (dataReceive.match("#TURN") != null)
+                    {
+                        $('#history').val($('#history').val() + "It's your turn!" + "\n");
+                        action = true;
+                        oStatus.val("Board: "+board.toString()+"\n" + "Hand: "+hand.toString()+"\n" + "now bid: "+now_bid+"\n" + "my bid: "+my_bid+"\n" + "chip: "+chip+"\n");
+                    }
+                    else if (dataReceive.match("#BOARD") != null)
+                    {
+                        if ((dataReceive.split(" ").length - 1) > board.length)
+                        {
+                            var b_len = board.length;
+                            for (i=0; i<(dataReceive.split(" ").length-b_len-1); i++)
+                                board.push(dataReceive.split(" ")[dataReceive.split(" ").length-i-1]);
+                            oStatus.val("Board: "+board.toString()+"\n" + "Hand: "+hand.toString()+"\n" + "now bid: "+now_bid+"\n" + "my bid: "+my_bid+"\n" + "chip: "+chip+"\n");
+                        }
+                    }
+                    else if (dataReceive.match("#CHIP") != null)
+                    {
+                        chip = parseInt(dataReceive.split(" ")[1]);
+                        oStatus.val("Board: "+board.toString()+"\n" + "Hand: "+hand.toString()+"\n" + "now bid: "+now_bid+"\n" + "my bid: "+my_bid+"\n" + "chip: "+chip+"\n");
+                        console.log(dataReceive);
+                    }
+                };
+
+                ws.onclose = function() {
+                    console.log("連線已關閉...");
+                };
+
+            }else{
+                // 瀏覽器不支援 WebSocket
+                console.log("您的瀏覽器不支援 WebSocket!");
+            }
+
+            function sendMessage(){
+                var dataSend = oWin.val().trim();
+                ws.send(dataSend);
+                oWin.val('');
+            }
+
+            function call(){
+                if (action)
+                {
+                    if ((now_bid - my_bid) > chip)
+                        oHistory.val(oHistory.val() + "You don't have that much money you poor little piece of sh*t 凸-_-凸\n");
+                    else
+                    {
+                        ws.send("#CALL");
+                        my_bid = now_bid;
+                        action = false;
+                    }
+                }
+                else
+                    oHistory.val(oHistory.val() + "It's not your turn you little sh*t 凸-_-凸\n");
+            }
+
+            function raise(){
+                if (action)
+                {
+                    var raise = oWin.val().trim();
+                    if (raise.match("[0-9]") != null)
+                    {
+                        if ((parseInt(raise) + now_bid - my_bid) > chip)
+                            oHistory.val(oHistory.val() + "You don't have that much money you poor little piece of sh*t 凸-_-凸\n");
+                        else
+                        {
+                            ws.send("#RAISE " + raise);
+                            my_bid = now_bid + parseInt(raise);
+                            action = false;
+                        }
+                    }
+                    else
+                        oHistory.val(oHistory.val() + "Enter a number you little sh*t 凸-_-凸\n");
+                }
+                else
+                    oHistory.val(oHistory.val() + "It's not your turn you little sh*t 凸-_-凸\n");
+                oWin.val('');
+            }
+
+            function fold(){
+                if (action)
+                    ws.send('#FOLD');
+                else
+                    oHistory.val(oHistory.val() + "It's not your turn you little sh*t 凸-_-凸\n");
+                action = false;
+            }
+
+            function check(){
+                if (action)
+                {
+                    if (my_bid == now_bid)
+                    {
+                        ws.send("#CHECK");
+                        action = false;
+                    }
+                    else
+                        oHistory.val(oHistory.val() + "You can only call, raise, or allin now you little sh*t 凸-_-凸\n");
+                }
+                else
+                    oHistory.val(oHistory.val() + "It's not your turn you little sh*t 凸-_-凸\n");
+            }
+
+            function allin(){
+                if (action)
+                {
+                    if ((my_bid + chip) < now_bid)
+                        oHistory.val(oHistory.val() + "You don't have that much money you poor little piece of sh*t 凸-_-凸\n");
+                    else
+                    {
+                        ws.send("#ALLIN");
+                        my_bid += chip;
+                        action = false;
+                    }
+                }
+                else
+                    oHistory.val(oHistory.val() + "It's not your turn you little sh*t 凸-_-凸\n");
+            }
+        </script>
+    </body>
+</html>

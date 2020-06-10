@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>大廳--德州撲克</title>
+        <style>
+            body{
+                overflow: hidden;
+            }
+            h2{
+                margin-top: 30px;
+                text-align: center;
+                background-color: #393D49;
+                color: #fff;
+                ont-weight: normal;
+            padding: 15px 0
+            }
+            #chat{
+                text-align: center;
+            }
+            #win{
+                margin-top: 20px;
+                text-align: center;
+            }
+            #sse{
+                margin-top: 10px;
+                text-align: center;
+            }
+            #sse button{
+                background-color: #009688;
+                color: #fff;
+                height: 40px;
+                border: 0;
+                border-radius: 3px 3px;
+                padding-left: 10px;
+                padding-right: 10px;
+                cursor: pointer;
+            }
+        </style>
+        <script src="http://code.jquery.com/jquery-1.12.4.min.js"></script>
+    </head>
+    <body>
+        <h2>請選擇人數</h2>
+            <div id="five">
+                <button onclick="five_room()">五人房</button>
+            </div>
+
+            <div id="seven">
+                <button onclick="seven_room()">七人房</button>
+            </div>
+
+            <div id="nine">
+                <button onclick="nine_room()">九人房</button>
+            </div>
+
+        <script type="text/javascript">
+            if ("WebSocket" in window){
+                console.log("您的瀏覽器支援 WebSocket!");
+                var ws = new WebSocket("ws://127.0.0.1:9001");
+                //var ws = new WebSocket("ws://localhost:9001");
+            }else{
+                // 瀏覽器不支援 WebSocket
+                console.log("您的瀏覽器不支援 WebSocket!");
+            }
+
+            function five_room(){
+                //var username = flask['username'];
+                ws.send('#ENTER ' + 'eee' + ' 5');
+                window.location='client5.html';
+            }
+
+            function seven_room(){
+                //var username = flask['username'];
+                ws.send('#ENTER ' + 'eee' + ' 7');
+                window.location='client5.html';
+            }
+
+            function nine_room(){
+                //var username = flask['username'];
+                ws.send('#ENTER ' + 'eee' + ' 9');
+                window.location='client5.html';
+            }
+        </script>
+    </body>
+</html>

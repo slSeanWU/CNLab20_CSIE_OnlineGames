@@ -1,3 +1,6 @@
+# !/usr/bin/python 
+# coding:utf-8 
+
 from websocket_server import WebsocketServer
 import sys
 import random
@@ -6,6 +9,7 @@ import numpy as np
 from collections import Counter
 
 SUITS = ['黑桃', '愛心', '方塊', '梅花']
+
 table_list = []
 clientID2name = {}
 name2client = {}
@@ -13,6 +17,9 @@ name2table = {}
 BB, SB = 100, 50
 
 DB = {'aaa': {'money': 1000}, 'bbb': {'money': 2000}, 'ccc': {'money': 3000}, 'ddd': {'money': 4000}, 'eee': {'money': 5000}}
+
+def num_to_card(card_num):
+    return SUITS[card_num//13]+str(card_num%13)
 
 # Called for every client connecting (after handshake)
 def new_client(client, server):    pass
@@ -35,7 +42,9 @@ def message_received(client, server, message):
     elif m[0] == '#ENTER':    join_table(m, server)
     else:    update_game_status(m, table_list[name2table[clientID2name[client['id']]]], server)
 
-def gen_card_list():    return np.arange(52).tolist()
+def gen_card_list():
+    # return [0, 1, 2, 3, 4, 5] + [6,7,8,9,10,11,12] + np.arange(13,52).tolist()
+    return np.arange(52).tolist()
 
 def give_card(card_list):
     card1 = card_list.pop(0)
@@ -75,7 +84,7 @@ def who_win(game_status):
     biggest_hands = None
     for player in game_status['players']:
         hands = {
-            'Straight_Flush': False,
+            'Straight_Flush': [],
             'Four': False,
             'Full_House': False,
             'Flush': False,
@@ -87,38 +96,51 @@ def who_win(game_status):
         }
         if player['in_game']:
             hand_card = game_status['board'] + player['card']
-            cards_num = Counter(np.array(hand_card) % 13)
-            cards_suit = Counter(np.array(hand_card) // 13)
+
+            cards_num = Counter(np.sort(np.array(hand_card) % 13))
+            print(cards_num)
+            cards_suit = Counter(np.sort(np.array(hand_card) // 13))
+            print(cards_suit)
+
             if len(cards_num) >= 5:
                 # 檢查順子
-                c = list(cards_num.keys())
+                c = sorted(cards_num) # list all unique element
                 if 0 in c:    c += [13]
                 l = 0
                 for i in range(1,len(c)):
                     l = (l+1) if c[i] == c[i-1] + 1 else 0
-                    if l >= 5:    hands['Straight'] += [c[i] % 13]
+                    if l >= 4:    hands['Straight'] += [c[i] % 13]
+                if hands['Straight']:
+                    hands['Straight'] = hands['Straight'][::-1]
 
                 # 檢查同花
                 if max(cards_suit.values()) >= 5:
-                    for i in range(0 + 13*list(cards_suit.keys())[np.argmax(list(cards_suit.values()))], 12 + 13*list(cards_suit.keys())[np.argmax(list(cards_suit.values()))]):
+                    u = list(cards_suit.keys())[np.argmax(list(cards_suit.values()))] # 
+                    for i in range(0 + 13*u, 13*(u+1)):
                         if i in hand_card:
                             hands['Flush'] = i
                             if i % 13 == 0:    break
                 
                 # 檢查同花順
                 if hands['Straight'] and hands['Flush']:
-                    checklist = []
-                    for s in hands['Straight'][::-1]:    checklist.append(np.arange(s-4,s+1).tolist() if s else [9,10,11,12,0])
-                    for cl in checklist:
-                        for suits in range(4):
-                            for num in cl:
-                                if (num + suits*13) in game_status['board'] + player['card']:
-                                    hands['Straight_Flush'] = num
-                                else:
-                                    hands['Straight_Flush'] = False
-                                    break
-                            if not hands['Straight_Flush']:    break
-                        if not hands['Straight_Flush']:    break
+                    u = list(cards_suit.keys())[np.argmax(list(cards_suit.values()))] # 
+                    a = False
+                    l = 0
+                    c = []
+                    for i in range(0+13*u, 13*(u+1)):
+                        if i in hand_card:
+                            print('add {} in to c'.format(i%13))
+                            c.append(i%13)
+                    
+                    if 0 in c:    c += [13]
+                    l = 0
+                    for i in range(1,len(c)):
+                        l = (l+1) if c[i] == c[i-1] + 1 else 0
+                        if l >= 4:    hands['Straight_Flush'] += [c[i] % 13]
+                    if hands['Straight_Flush']: 
+                        hands['Straight_Flush'] = hands['Straight_Flush'][::-1]
+
+
 
 
                 keys = list(cards_num.keys())
@@ -131,11 +153,11 @@ def who_win(game_status):
                     if len(cards_num) == 5:
                         if keys[values.index(2)] == 0:
                             hands['Two_Pair'].append(0)
-                            hands['Two_Pair'].append(keys[values[::-1].index(2)])
+                            hands['Two_Pair'].append(keys[::-1][values[::-1].index(2)])
                         else:
                             hands['Two_Pair'].append(keys[values[::-1].index(2)])
                             hands['Two_Pair'].append(keys[values.index(2)])
-                        hands['Two_Pair'].append(keys[values.index(1)])
+                        hands['Two_Pair'].append(keys[::-1][values[::-1].index(1)])
                     else:
                         hands['One_Pair'].append(keys[values.index(2)])
                         del keys[values.index(2)]
@@ -163,6 +185,9 @@ def who_win(game_status):
                         hands['Two_Pair'].append(keys[values.index(2)])
                     hands['Two_Pair'].append(keys[values.index(1)])
             
+            print(player['username'], hands)
+            print([ num_to_card(i) for i in hand_card])
+
             if biggest_hands:
                 if compare(hands, biggest_hands[0]) == 1:    biggest_hands = (hands, [player['username']])
                 elif compare(hands, biggest_hands[0]) == 0:    biggest_hands[1].append(player['username'])
@@ -270,6 +295,7 @@ def update_game_status(m, game_status, server):
             server.send_message_to_all("#IO %s All-In !!" % game_status['players'][game_status['now_playing']]['username'])
             server.send_message(name2client[game_status['players'][game_status['now_playing']]['username']], "#CHIP %d" % DB[game_status['players'][game_status['now_playing']]['username']]['money'])
 
+    print("DB:", DB)
     # 通知所有人現在下注金額
     server.send_message_to_all("#BID %d" % game_status['now_bid'])
     
@@ -296,7 +322,9 @@ def update_game_status(m, game_status, server):
         winners = who_win(game_status)
         server.send_message_to_all("#IO %s won!" % " and ".join(winners))
         pool = 0
-        for player in game_status['players']:    pool += player['pool']
+        for player in game_status['players']:
+            pool += player['pool']
+            player['pool'] = 0
         for name in winners:
             DB[name]['money'] += pool // len(winners)
             server.send_message(name2client[name], "#CHIP %d" % DB[name]['money'])

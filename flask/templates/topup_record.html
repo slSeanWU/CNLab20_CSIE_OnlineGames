@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<title>CSIE Online Games: Top-up Records</title>
+
+<html>
+<div id="head">
+  <h4>Welcome, {{ username }}.    Your coins: {{ coins }}.</h4>
+</div>
+
+<div id="record">
+  <h1>Your Top-up Records</h1>
+  {% if records %}
+    <table id="record-table">
+      <tr> <th>[timestamp]</th> <th>[voucher serial num]</th> <th>[value]</th> <th>[coins after top-up]</th> </tr>
+      {% for r in records %}
+      <tr> <td>{{ r.used_time }}</td> <td>{{ r.used_serial_num }}</td> <td style="text-align:right">{{ r.value }}</td> <td style="text-align:right">{{ r.coins_after }}</td> </tr>
+      {% endfor %}
+    </table>
+  {% else %}
+    <p>Nothing to show!</p>
+  {% endif %}
+</div>
+
+<div id="go-back">
+  <a href="/member_center">
+    <button>Back to Member Center</button>
+  </a>
+</div>
+</html>

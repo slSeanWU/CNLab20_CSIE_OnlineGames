@@ -202,7 +202,7 @@ def init_game(game_status, server):
     game_status['now_bid'] = BB
     game_status['BB'] = (game_status['BB'] + 1) % game_status['player_num']
     game_status['SB'] = (game_status['SB'] + 1) % game_status['player_num']
-    game_status['now_playing'] = (game_status['SB'] - 1) % game_status['player_num']
+    game_status['now_playing'] = game_status['SB']#(game_status['SB'] - 1) % game_status['player_num']
     game_status['board'] = turn_card(card_list)
 
     for player in game_status['players']:
@@ -221,6 +221,7 @@ def init_game(game_status, server):
     game_status['players'][game_status['SB']]['pool'] += SB
 
     server.send_message_to_all("#IO Game Start!")
+    server.send_message(name2client[game_status['players'][game_status['now_playing']]['username']], "#TURN")
 
 def update_game_status(m, game_status, server):
     action = m[0]
@@ -230,7 +231,9 @@ def update_game_status(m, game_status, server):
             for player in game_status['players']:    server.send_message(name2client[player['username']], "#IO %s entered the room" % m[1])
             game_status['players'].append({'username': m[1], 'card': None, 'in_game': False, 'pool': 0, 'action_yet': False})
         # 人數到齊
-        if m[1] in name2client and len(game_status['players']) == game_status['player_num']:    init_game(game_status, server)
+        if m[1] in name2client and len(game_status['players']) == game_status['player_num']:
+            init_game(game_status, server)
+            return None
         else:    return None
 
     # 仍在遊戲中所有人皆行動過該輪才有可能結束

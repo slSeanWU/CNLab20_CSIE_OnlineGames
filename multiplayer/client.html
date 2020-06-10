@@ -138,6 +138,7 @@
                     {
                         chip = parseInt(dataReceive.split(" ")[1]);
                         oStatus.val("Board: "+board.toString()+"\n" + "Hand: "+hand.toString()+"\n" + "now bid: "+now_bid+"\n" + "my bid: "+my_bid+"\n" + "chip: "+chip+"\n");
+                        console.log(dataReceive);
                     }
                 };
 
@@ -176,14 +177,19 @@
                 if (action)
                 {
                     var raise = oWin.val().trim();
-                    if ((parseInt(raise) + now_bid - my_bid) > chip)
-                        oHistory.val(oHistory.val() + "You don't have that much money you poor little piece of sh*t 凸-_-凸\n");
-                    else
+                    if (raise.match("[0-9]") != null)
                     {
-                        ws.send("#RAISE " + raise);
-                        my_bid = now_bid + parseInt(raise);
-                        action = false;
+                        if ((parseInt(raise) + now_bid - my_bid) > chip)
+                            oHistory.val(oHistory.val() + "You don't have that much money you poor little piece of sh*t 凸-_-凸\n");
+                        else
+                        {
+                            ws.send("#RAISE " + raise);
+                            my_bid = now_bid + parseInt(raise);
+                            action = false;
+                        }
                     }
+                    else
+                        oHistory.val(oHistory.val() + "Enter a number you little sh*t 凸-_-凸\n");
                 }
                 else
                     oHistory.val(oHistory.val() + "It's not your turn you little sh*t 凸-_-凸\n");
@@ -211,7 +217,6 @@
                 }
                 else
                     oHistory.val(oHistory.val() + "It's not your turn you little sh*t 凸-_-凸\n");
-                action = false;
             }
 
             function allin(){

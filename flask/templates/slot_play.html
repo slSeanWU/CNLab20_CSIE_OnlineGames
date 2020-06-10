@@ -12,7 +12,12 @@
 <div id="game-panel">
   <h2>The Slot Machine</h2>
   {% for line in slot %}
-    <p>{{ line }}</p>
+    <p>
+      {{ line }}
+      {% if winning_amounts[ loop.index0 ] > 0 %}
+        +{{ winning_amounts[ loop.index0 ] }} !!
+      {% endif %}
+    </p>
   {% endfor %}
 </div>
 

@@ -88,7 +88,8 @@ def slot_play():
       'total_earnings': 0,
       'last_earnings': 0,
       'slot': get_slot_spin(),
-      'winning_lines': []
+      'winning_lines': [],
+      'winning_amounts': [0, 0, 0],
     }
   else:
     stats = json.loads(request.args.get('json_str'))
@@ -100,7 +101,9 @@ def slot_play():
     total_bet=stats['total_bet'],
     total_earnings=stats['total_earnings'],
     last_earnings=stats['last_earnings'],
-    slot=stats['slot']
+    slot=stats['slot'],
+    winning_lines=stats['winning_lines'],
+    winning_amounts=stats['winning_amounts']
   )
 
 @app.route('/slot_spin', methods=['POST'])
@@ -128,16 +131,20 @@ def slot_spin():
 
   slot = get_slot_spin()
   winning_lines = []
+  winning_amounts = [0, 0, 0]
 
   if num_plines >= 1:
     last_earnings = single_bet * get_slot_prize(1, slot)
     winning_lines.append(1)
+    winning_amounts[1] = last_earnings
   if num_plines >= 2:
     last_earnings += single_bet * get_slot_prize(0, slot)
     winning_lines.append(0)
+    winning_amounts[0] = last_earnings - winning_amounts[1]
   if num_plines >= 3:
     last_earnings += single_bet * get_slot_prize(2, slot)
     winning_lines.append(2)
+    winning_amounts[2] = last_earnings - winning_amounts[0] - winning_amounts[1]
 
   # place more "high-paying" icons in if they don't affect the results XD
   for l in range(3):
@@ -155,7 +162,8 @@ def slot_spin():
     'total_earnings': total_earnings,
     'last_earnings': last_earnings,
     'slot': slot,
-    'winning_lines': winning_lines
+    'winning_lines': winning_lines,
+    'winning_amounts': winning_amounts
   }
   app.logger.info(json_obj)
 

@@ -1,6 +1,6 @@
 from flask import current_app as app
 from flask import render_template, request, flash, redirect, url_for
-from models import UserInfo, CoinVoucher, SlotGameRecord
+from models import UserInfo, CoinVoucher, SlotGameRecord, TopUpRecord
 from main import db
 from flask_login import login_user, logout_user, login_required, current_user
 from sqlalchemy.sql import func
@@ -112,12 +112,34 @@ def top_up_authentication():
         voucher.expiration_time = datetime.now()
         user = UserInfo.query.filter_by(username=current_user.username).first()
         user.coins += voucher.value
+        app.logger.info(voucher.serial_num)
+        tp_rec = TopUpRecord(
+          user_id=user.id,
+          used_serial_num=voucher.serial_num,
+          value=voucher.value,
+          coins_after=user.coins
+        )
+        app.logger.info(tp_rec.used_serial_num)
+        db.session.add(tp_rec)
         db.session.commit()
         flash('Top-up successful! You have {} more coins now.'.format(voucher.value))
     else:
       flash('Top-up FAILED! Invalid serial number.')
 
     return redirect(url_for('member_center'))
+
+@app.route('/topup_record', methods=['GET'])
+@login_required
+def topup_record():
+  user = UserInfo.query.filter_by(username=current_user.username).first()
+  recs = list(TopUpRecord.query.filter_by(user_id=user.id).all())
+  app.logger.info(recs)
+
+  return render_template('topup_record.html',
+    username=user.username,
+    coins=user.coins,
+    records=recs
+  )
 
 @app.route('/main_menu', methods=['GET'])
 @login_required

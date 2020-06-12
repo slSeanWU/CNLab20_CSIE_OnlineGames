@@ -99,7 +99,7 @@
                 ws.onopen = function(){
                     console.log("websocket 已連線上");
                     //var username = flask['username'];
-                    ws.send('#NAME ' + ({{ username }}));
+                    ws.send('#NAME ' + {{ username|tojson }});
                 }
 
                 ws.onmessage = function (evt) {

@@ -16,7 +16,7 @@ name2client = {}
 name2table = {}
 BB, SB = 100, 50
 
-DB = {'aaa': {'money': 1000}, 'bbb': {'money': 2000}, 'ccc': {'money': 3000}, 'ddd': {'money': 4000}, 'eee': {'money': 5000}}
+DB = {'surrey': {'money': 1001}, 'surrey2': {'money': 1002}, '123': {'money': 1003}}
 
 def num_to_card(card_num):    return SUITS[card_num//13]+str(card_num%13)
 
@@ -37,6 +37,7 @@ def message_received(client, server, message):
     if m[0] == '#NAME':
         clientID2name[client['id']] = m[1]
         name2client[m[1]] = client
+        print(name2client)
         update_game_status(m, table_list[name2table[clientID2name[client['id']]]], server)
     elif m[0] == '#ENTER':    join_table(m, server)
     elif m[0] == '#CHAT':
@@ -204,7 +205,7 @@ def join_table(m, server):
         'now_playing': -1,
         'players': [],
         'board': []
-        }
+    }
     name2table[m[1]] = len(table_list)
     table_list.append(game_status)
     update_game_status(m, game_status, server)
@@ -215,6 +216,8 @@ def init_game(game_status, server):
     for player in game_status['players']: # 發牌
         card_list, player['card'] = give_card(card_list)
         player['in_game'] = True
+        print('initializing game...')
+        print(player)
 
     game_status['turn'] = 0
     game_status['now_bid'] = BB
@@ -226,8 +229,14 @@ def init_game(game_status, server):
     for player in game_status['players']:
         player['in_game'] = True
         player['action_yet'] = False
-        server.send_message(name2client[player['username']], "#HAND %s %s" % (SUITS[player['card'][0]//13] + str(player['card'][0]%13 + 1), SUITS[player['card'][1]//13] + str(player['card'][1]%13 + 1)))
-        server.send_message(name2client[player['username']], "#CHIP %d" % DB[player['username']]['money'])
+        cur_client = name2client[player['username']]
+        hand_card_message = "#HAND %s %s" % (SUITS[player['card'][0]//13] + str(player['card'][0]%13 + 1), SUITS[player['card'][1]//13] + str(player['card'][1]%13 + 1))
+        chip_message = "#CHIP %d" % DB[player['username']]['money']
+        print('server send to {}: {}'.format(cur_client, hand_card_message))
+        server.send_message(cur_client, hand_card_message)
+        server.send_message(cur_client, chip_message)
+        print('success')
+
 
     # 大盲注，小盲注
     server.send_message_to_all("#BID %d" % BB)

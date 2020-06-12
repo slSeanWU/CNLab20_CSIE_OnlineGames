@@ -12,7 +12,8 @@ from flask import current_app as app
 from flask import render_template, request, flash, redirect, url_for, json
 from models import UserInfo
 from flask_login import login_user, logout_user, login_required, current_user
-
+from flask_sqlalchemy import SQLAlchemy
+import sqlalchemy 
 
 SUITS = ['黑桃', '愛心', '方塊', '梅花']
 
@@ -22,7 +23,15 @@ name2client = {}
 name2table = {}
 BB, SB = 100, 50
 
-DB = {}
+engine = sqlalchemy.create_engine('mysql+pymysql://root:final@35.236.142.37/Casino')
+print(engine)
+with engine.connect() as connection:
+    db = connection.execute("SHOW DATABASES")
+    for row in db:
+        print(row)
+
+
+DB = {'surrey': {'money': 1001}, 'surrey2': {'money': 1002}, '123': {'money': 1003}}
 
 def num_to_card(card_num):    return SUITS[card_num//13]+str(card_num%13)
 
@@ -35,19 +44,17 @@ def client_left(client, server):
         del name2client[clientID2name[client['id']]]
         del clientID2name[client['id']]
 
-user = current_user
 # Called when a client sends a message
 def message_received(client, server, message):
     print("Client(%d) said: %s" % (client['id'], message))
+
     m = message.split()
     if m[0] == '#NAME':
         clientID2name[client['id']] = m[1]
         name2client[m[1]] = client
-        DB[user.username]['money'] = user.coins
+        print(name2client)
         update_game_status(m, table_list[name2table[clientID2name[client['id']]]], server)
-    elif m[0] == '#ENTER':    
-        DB[user.username]['money'] = user.coins
-        join_table(m, server)
+    elif m[0] == '#ENTER':    join_table(m, server)
     elif m[0] == '#CHAT':
         m.insert(1, clientID2name[client['id']]+":")
         server.send_message_to_all(" ".join(m))
@@ -213,7 +220,7 @@ def join_table(m, server):
         'now_playing': -1,
         'players': [],
         'board': []
-        }
+    }
     name2table[m[1]] = len(table_list)
     table_list.append(game_status)
     update_game_status(m, game_status, server)
@@ -224,6 +231,8 @@ def init_game(game_status, server):
     for player in game_status['players']: # 發牌
         card_list, player['card'] = give_card(card_list)
         player['in_game'] = True
+        print('initializing game...')
+        print(player)
 
     game_status['turn'] = 0
     game_status['now_bid'] = BB
@@ -235,8 +244,14 @@ def init_game(game_status, server):
     for player in game_status['players']:
         player['in_game'] = True
         player['action_yet'] = False
-        server.send_message(name2client[player['username']], "#HAND %s %s" % (SUITS[player['card'][0]//13] + str(player['card'][0]%13 + 1), SUITS[player['card'][1]//13] + str(player['card'][1]%13 + 1)))
-        server.send_message(name2client[player['username']], "#CHIP %d" % DB[player['username']]['money'])
+        cur_client = name2client[player['username']]
+        hand_card_message = "#HAND %s %s" % (SUITS[player['card'][0]//13] + str(player['card'][0]%13 + 1), SUITS[player['card'][1]//13] + str(player['card'][1]%13 + 1))
+        chip_message = "#CHIP %d" % DB[player['username']]['money']
+        print('server send to {}: {}'.format(cur_client, hand_card_message))
+        server.send_message(cur_client, hand_card_message)
+        server.send_message(cur_client, chip_message)
+        print('success')
+
 
     # 大盲注，小盲注
     server.send_message_to_all("#BID %d" % BB)
@@ -299,9 +314,7 @@ def update_game_status(m, game_status, server):
 
     # 通知所有人現在下注金額
     server.send_message_to_all("#BID %d" % game_status['now_bid'])
-    user.coins = DB[user.username]['money']
-    db.session.commit()
-
+    
     # 若為該輪最後一位玩家，turn ++，開牌
     if is_last_player(game_status):
         if game_status['turn'] != 3:

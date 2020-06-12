@@ -1,0 +1,65 @@
+body{
+	background-color: black;
+}
+.card-table{
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	background-image: url(../images/table.png);
+	background-size: cover;
+	background-position: center;
+	background-repeat: no-repeat;
+}
+.show_card{
+	position: relative;
+	height: 100%;
+	object-fit: contain;
+	width: auto;
+	margin-left: -3.5vh;
+	box-shadow: 0px 15px 16.83px 0.17px rgba(0, 0, 0, 0.05);
+	-moz-box-shadow: 0px 15px 16.83px 0.17px rgba(0, 0, 0, 0.05);
+	-webkit-box-shadow: 0px 15px 16.83px 0.17px rgba(0, 0, 0, 0.05);
+	-o-box-shadow: 0px 15px 16.83px 0.17px rgba(0, 0, 0, 0.05);
+	-ms-box-shadow: 0px 15px 16.83px 0.17px rgba(0, 0, 0, 0.05);
+}
+.cards{
+	width: 100%;
+	height: 20vh;
+	position: absolute;
+	padding-left: calc(44% - 5vh);
+}
+.table_cards{
+	bottom: calc(15vh + 20px);
+}
+.dealer_cards{
+	top: calc(15vh + 20px);
+}
+.control_panel{
+	/*box-sizing: border-box;*/
+	background-color: white;
+	position: fixed;
+	width: 20vw;
+	height: auto;
+	z-index: 100;
+	top: 2vh;
+	left: 2vw;
+	padding: 2%;
+}
+
+input{
+	font-size: 12px;
+	display: inline-block;
+	margin: 0px;
+	width: 40%;
+}
+.take-stop-container{
+	height: 13vh;
+	bottom: 5px;
+	font-size: 12px;
+	width: 49.5%;
+	padding: 0px;
+}
+.take-stop{
+	margin: 10px;
+	position: relative;
+}

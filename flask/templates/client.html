@@ -95,7 +95,7 @@
 
             if ("WebSocket" in window){
                 console.log("您的瀏覽器支援 WebSocket!");
-                var ws = new WebSocket("ws://127.0.0.1:9001");
+                var ws = new WebSocket("ws://0.0.0.0:9001");
                 ws.onopen = function(){
                     console.log("websocket 已連線上");
                     //var username = flask['username'];

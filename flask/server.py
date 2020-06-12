@@ -23,15 +23,26 @@ name2client = {}
 name2table = {}
 BB, SB = 100, 50
 
-engine = sqlalchemy.create_engine('mysql+pymysql://root:final@35.236.142.37/Casino')
+engine = sqlalchemy.create_engine('mysql+pymysql://root:final@35.236.142.37/')
 print(engine)
-with engine.connect() as connection:
-    db = connection.execute("SHOW DATABASES")
-    for row in db:
-        print(row)
+
+DB = {}
+# with engine.connect() as connection:
+#     connection.execute("use Casino")
+#     coin_db = connection.execute("select coins from user_info where username = '123'")
+#     coin = [row[0] for row in coin_db][0]
+#     print(coin, type(coin))
+
+def adjust_coins(username, num):
+    engine = sqlalchemy.create_engine('mysql+pymysql://root:final@35.236.142.37/')
+    with engine.connect() as connection:
+        connection.execute("USE Casino")
+        coin_db = connection.execute("SELECT coins FROM user_info WHERE username='%s'" % username)
+        coin = [row[0] for row in coin_db][0]
+        connection.execute("UPDATE user_info SET coins=%d WHERE username='%s'" % (num, username))
 
 
-DB = {'surrey': {'money': 1001}, 'surrey2': {'money': 1002}, '123': {'money': 1003}}
+# DB = {'surrey': {'money': 1001}, 'surrey2': {'money': 1002}, '123': {'money': 1003}}
 
 def num_to_card(card_num):    return SUITS[card_num//13]+str(card_num%13)
 
@@ -52,9 +63,15 @@ def message_received(client, server, message):
     if m[0] == '#NAME':
         clientID2name[client['id']] = m[1]
         name2client[m[1]] = client
-        print(name2client)
         update_game_status(m, table_list[name2table[clientID2name[client['id']]]], server)
-    elif m[0] == '#ENTER':    join_table(m, server)
+    elif m[0] == '#ENTER':
+        with engine.connect() as connection:
+            connection.execute("use Casino")
+            coin_db = connection.execute("SELECT coins FROM user_info WHERE username='%s'" % m[1])
+            coin = [row[0] for row in coin_db][0]
+            DB[m[1]] = {}
+            DB[m[1]]['money'] = coin
+        join_table(m, server)
     elif m[0] == '#CHAT':
         m.insert(1, clientID2name[client['id']]+":")
         server.send_message_to_all(" ".join(m))
@@ -344,6 +361,8 @@ def update_game_status(m, game_status, server):
         for name in winners:
             DB[name]['money'] += pool // len(winners)
             server.send_message(name2client[name], "#CHIP %d" % DB[name]['money'])
+        for player in game_status['players']:
+            adjust_coins(player['username'], DB[player['username']]['money'])
         init_game(game_status, server)
 
     # 告知下個玩家：輪你

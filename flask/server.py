@@ -13,6 +13,7 @@ from flask import render_template, request, flash, redirect, url_for, json
 from models import UserInfo
 from flask_login import login_user, logout_user, login_required, current_user
 from flask_sqlalchemy import SQLAlchemy
+import sqlalchemy 
 
 SUITS = ['黑桃', '愛心', '方塊', '梅花']
 
@@ -22,8 +23,13 @@ name2client = {}
 name2table = {}
 BB, SB = 100, 50
 
-print(UserInfo.query.filter_by(username='123'))
-exit()
+engine = sqlalchemy.create_engine('mysql+pymysql://root:final@35.236.142.37/Casino')
+print(engine)
+with engine.connect() as connection:
+    db = connection.execute("SHOW DATABASES")
+    for row in db:
+        print(row)
+
 
 DB = {'surrey': {'money': 1001}, 'surrey2': {'money': 1002}, '123': {'money': 1003}}
 

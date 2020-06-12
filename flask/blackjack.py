@@ -43,7 +43,7 @@ def blackjack_rules():
 def blackjack_play():
     user = current_user
     #return render_template('blackjack_play.html', username=user.username, coins=user.coins)
-    return render_template('test.html', async_mode=socketio.async_mode, username=user.username, coins=user.coins)
+    return render_template('blackjack_play.html', async_mode=socketio.async_mode, username=user.username, coins=user.coins)
 
 @socketio.on('connect_event', namespace='/blackjack')
 def test_message(message):

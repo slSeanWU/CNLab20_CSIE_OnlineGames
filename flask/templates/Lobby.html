@@ -64,8 +64,9 @@
             }
 
             function five_room(){
-                //var username = flask['username'];
-                ws.send('#ENTER ' + ({{ username }}) + ' 5');
+                var username = {{ username|tojson }};
+                var coins = {{ coins|tojson }};
+                ws.send('#ENTER ' + username + ' 2');
                 window.location.href='/texas_play';//.html?username='+({{ username }})+'&coins='+({{ coins }});
             }
 

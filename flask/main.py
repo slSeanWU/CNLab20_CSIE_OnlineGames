@@ -13,7 +13,7 @@ def create_app():
 
     db.init_app(app)
     with app.app_context():
-        import routes, slot, blackjack
+        import routes, slot, blackjack, poker
         db.create_all()
         db.session.commit()
 

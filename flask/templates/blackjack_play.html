@@ -1,149 +1,46 @@
-<!DOCTYPE HTML>
-<meta charset="UTF-8">
-<title>CSIE Online Games: Black Jack</title>
-
+<!DOCTYPE html>
 <html>
 <head>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.dev.js"></script>
-    <script type="text/javascript" charset="utf-8">
-        $(document).ready(function(){
-            namespace = '/blackjack';
-            var socket = io(namespace);
-            var coins_now = Number({{ coins }});
-            var bet_show = 0;
-
-            socket.on('connect', function(){
-                socket.emit('connect_event', {'data': {{ username|tojson }} + ' Connected!'});
-            });
-
-            socket.on('start', function(msg){
-                document.getElementById("player").innerHTML=msg.player;
-                document.getElementById("dealer").innerHTML=msg.dealer;
-                $('form#take').find(':input[type=submit]').prop('disabled', false);
-                $('form#stop').find(':input[type=submit]').prop('disabled', false);
-                document.getElementById("log").innerHTML='';
-                $('#log').append('<br>' + $('<div/>').text('Received #: Start a new game.').html());
-            });
-
-            socket.on('server_response', function(msg, cb){
-                $('#log').append('<br>' + $('<div/>').text('Received #' + ': ' + msg.data).html());
-                if(cb)
-                    cb();
-            });
-
-            socket.on('player_picked', function(msg){
-                $('#log').append('<br>' + $('<div/>').text('Received #: Player drew a card.').html());
-                document.getElementById("player").innerHTML=msg.cards;
-            });
-
-            socket.on('player_bust', function(){
-                $('#log').append('<br>' + $('<div/>').text('Player Bust!').html());
-                $('form#take').find(':input[type=submit]').prop('disabled', true);
-                $('form#stop').find(':input[type=submit]').prop('disabled', true);
-                socket.emit('player_stop');
-            });
-
-            socket.on('dealer_picked', function(msg){
-                $('#log').append('<br>' + $('<div/>').text('Received #: Dealer drew cards.').html());
-                document.getElementById("dealer").innerHTML=msg.cards;
-                if(msg.total > 21){
-                    $('#log').append('<br>' + $('<div/>').text('Dealer Bust!').html());
-                }
-            });
-
-            socket.on('result', function(msg){
-                alert(msg.data)
-                if(msg.data == "Dealer Win!"){
-                    coins_now -= Number(bet_show)
-                }else if(msg.data =="You Win!"){
-                    coins_now += Number(bet_show)
-                }
-                bet_show = 0
-                document.getElementById("show_result").innerHTML= "<h4>Last time: " + msg.res + "</h4>";
-                $('form#start').find(':input[type=submit]').prop('disabled', false);
-                $('form#start').find(':input[type=number]').prop('disabled', false);
-                document.getElementById("head").innerHTML='<h1>CSIE Online Games --- Black Jack</h1><h4>User: {{ username }}<br> Coins: '+coins_now+'</h4>'
-            });
-/*
-            $('form#emit').submit(function(event){
-                socket.emit('client_event', {'data': $('#emit_data').val()});
-                return false;
-            });
-
-            $('form#disconnect').submit(function(event){
-                socket.emit('disconnect_request');
-                return false;
-            });
-*/
-            $('form#start').submit(function(event){
-                $('form#start').find(':input[type=submit]').prop('disabled', true);
-                $('form#start').find(':input[type=number]').prop('disabled', true);
-                bet_show = $('#bet').val()
-                socket.emit('start_game', {'bet_coin': bet_show});
-                return false;
-            });
-
-            $('form#take').submit(function(event){
-                socket.emit('player_take_one');
-                return false;
-            });
-
-            $('form#stop').submit(function(event){
-                $('form#take').find(':input[type=submit]').prop('disabled', true);
-                $('form#stop').find(':input[type=submit]').prop('disabled', true);
-                socket.emit('player_stop');
-                return false;
-            });
-
-        })
-    </script>
+	<title>Black Jack</title>
+	<link rel="stylesheet" href="static/css/style.css">
+	<link rel="stylesheet" href="static/css/custom_style.css">
+	<link rel="stylesheet" href="static/css/blackjack.css">
+	<script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.dev.js"></script>
 </head>
 <body>
-    <div id="head">
-      <h1>CSIE Online Games --- Black Jack</h1>
-      <h4>User: {{ username }} <br> Coins: {{ coins }}</h4>
-    </div>
+	<input type="text" id="username_store" value="{{ username }}" style="display: none;">
+	<input type="number" id="coins_store" value="{{ coins }}" style="display: none;">
 
-    <div id='show_result'></div>
+	<div class="control_panel round-shadow">
+		<h3>CSIE Online Games --- Black Jack</h3>
+      	<h4>User: {{ username }} <br><span id="user_coins">Coins: {{ coins }}</span></h4>
+      	<form id = "start" method="POST" action="#">
+	        <input type="number" min="5" value="5" name="bet" id="bet" placeholder="How many coins to bet?">
+	        <input type="submit" value="Start">
+    	</form>
+	</div>
+	<div class="card-table"></div>
+	<div class="dealer_cards cards" id="dealer">
+		<img src="static/images/cards/gray_back.png" class="show_card" style="display: none;" id="example-card"> 
+	</div>
+	<div class="table_cards cards" id="player">
+		<!-- <img src="static/images/cards/gray_back.png" class="show_card"> -->
+	</div>
+	<div class="take-stop-container cards" style="left: 0px;">
+		<form id = "take" method="POST" action="#">
+			<input type="submit" value="Take" class="form-submit take-stop" disabled style="float: right;">
+		</form>
+	</div>
+	<div class="take-stop-container cards" style="right: 0px;">
+		<form id = "stop" method="POST" action="#">
+			<input type="submit" value="Stop" class="form-submit take-stop" disabled style="background-color: red; float: left;">
+		</form>
+	</div>
 
-    <p>Async mode is: <b>{{ async_mode }}</b></p>
-    <h2>How many coins to bet?:</h2>
-<!--    
-    <form id = "emit" method="POST" action='#'>
-        <input type="text" name="emit_data" id="emit_data" placeholder="Message">
-        <input type="submit" value="Echo">
-    </form>
-    <form id = "disconnect" method="POST" action="#">
-        <input type="submit" value="Disconnect">
-    </form>
--->
-    <form id = "start" method="POST" action="#">
-        <input type="number" min="5" value="5" name="bet" id="bet" placeholder="How many coins to bet?">
-        <input type="submit" value="Start">
-    </form>
-    <form id = "take" method="POST" action="#">
-        <input type="submit" value="Take" disabled>
-    </form>
-    <form id = "stop" method="POST" action="#">
-        <input type="submit" value="Stop" disabled>
-    </form>
 
-    <h2>Logs:</h2>
-    <div id="log"></div>
 
-    <h2>Player:</h2>
-    <div id="player"></div>
-
-    <h2>Dealer:</h2>
-    <div id="dealer"></div>
-
-    <div id="go-back">
-        <p>Feel tired? <br>
-          <a href="/main_menu">
-            <button>Leave game</button>
-          </a>
-        </p>
-      </div>
+	
+	<script type="text/javascript" src="static/js/blackjack.js"></script>
 </body>
 </html>

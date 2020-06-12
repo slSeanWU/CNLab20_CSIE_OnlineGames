@@ -12,3 +12,12 @@ def texas_rules():
   '''
   user = current_user
   return render_template('Lobby.html', username=user.username, coins=user.coins)
+
+@app.route('/texas_play', methods=['GET'])
+@login_required
+def texas_play():
+  '''
+  Displays the game's rules (accessible from main menu).
+  '''
+  user = current_user
+  return render_template('client.html', username=user.username, coins=user.coins)

@@ -17,6 +17,7 @@ class UserInfo(UserMixin, db.Model):
     last_active_time = db.Column(db.DateTime)
 
     slot_games = db.relationship('SlotGameRecord', backref='user_info', lazy=True)
+    blackjack_games = db.relationship('BlackJackGameRecord', backref='user_info', lazy=True)
     topup_records = db.relationship('TopUpRecord', backref='user_info', lazy=True)
 
     @property
@@ -63,6 +64,14 @@ class SlotGameRecord(db.Model):
     For slot game records
     '''
     __tablename__ = 'slot_game_record_single_new'
+    play_id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user_info.id'), nullable=False)
+    bet_amount = db.Column(db.Integer, nullable=False)
+    earnings = db.Column(db.Integer, nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.now, nullable=False)
+
+class BlackJackGameRecord(db.Model):
+    __tablename__ = 'blackjack_game_record_new_1'
     play_id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user_info.id'), nullable=False)
     bet_amount = db.Column(db.Integer, nullable=False)

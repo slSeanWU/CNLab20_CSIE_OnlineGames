@@ -1,6 +1,6 @@
 from flask import current_app as app
 from flask import render_template, request, flash, redirect, url_for
-from models import UserInfo, CoinVoucher, SlotGameRecord, TopUpRecord
+from models import UserInfo, CoinVoucher, SlotGameRecord, TopUpRecord, BlackJackGameRecord
 from main import db
 from flask_login import login_user, logout_user, login_required, current_user
 from sqlalchemy.sql import func
@@ -55,12 +55,23 @@ def member_center():
         user_id=user.id
       ).first()
 
+    blackjack_results = BlackJackGameRecord.query.with_entities(
+        func.sum(BlackJackGameRecord.bet_amount).label('blackjack_bet'),
+        func.sum(BlackJackGameRecord.earnings).label('blackjack_earnings'),
+        func.count().label('blackjack_rds')
+      ).filter_by(
+        user_id=user.id
+      ).first()
+
     return render_template('member_center.html', 
       username=user.username,
       coins=user.coins,
       slot_rds=slot_results.slot_rds,
       slot_bet=slot_results.slot_bet or 0,
-      slot_earnings=slot_results.slot_earnings or 0
+      slot_earnings=slot_results.slot_earnings or 0,
+      blackjack_rds=blackjack_results.blackjack_rds,
+      blackjack_bet=blackjack_results.blackjack_bet or 0,
+      blackjack_earnings=blackjack_results.blackjack_earnings or 0
     )
 
 

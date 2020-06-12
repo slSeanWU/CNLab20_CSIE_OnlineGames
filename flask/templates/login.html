@@ -14,7 +14,16 @@
     <link rel="stylesheet" href="static/css/custom_style.css">
 </head>
 <body>
-
+    <script type="text/javascript">
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            {% for message in messages %}
+              alert("{{ message }}");
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+        
+    </script>
     <div class="main">
         <!-- Sing in  Form -->
         <section class="sign-in">

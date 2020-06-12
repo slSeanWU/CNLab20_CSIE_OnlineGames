@@ -63,3 +63,12 @@ input{
 	margin: 10px;
 	position: relative;
 }
+.form-submit{
+	line-height: 12px;
+	padding: 10px 20px;
+	margin: 0px;
+	border: 0px;
+	font-size: 10px;
+	box-sizing: border-box;
+	margin-top: 10px;
+}

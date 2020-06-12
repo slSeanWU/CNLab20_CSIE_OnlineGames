@@ -1,8 +1,9 @@
 function add_card(who, card){
     var new_card = $("#example-card").clone();
+    var color = ["C","D","H","S"];
     new_card.addClass("added");
     if (card!="X")
-        new_card.attr("src","static/images/cards/"+card+"C"+".png");
+        new_card.attr("src","static/images/cards/"+card+color[Math.floor(Math.random() * 4)]+".png");
     else
         new_card.addClass("hidden");
     if (who=="dealer")
@@ -15,6 +16,7 @@ $(document).ready(function(){
     namespace = '/blackjack';
     var socket = io(namespace);
     var coins_now = Number($("#coins_store").val());
+    var coins_prev = coins_now;
     var username = $("#username_store").val();
     var bet_show = 0;
 
@@ -23,6 +25,7 @@ $(document).ready(function(){
     });
 
     socket.on('start', function(msg){
+        coins_prev = coins_now;
         $( ".added" ).remove();
         add_card("player",msg.player[0]);
         add_card("dealer",msg.dealer[0]);
@@ -59,7 +62,8 @@ $(document).ready(function(){
     });
 
     socket.on('dealer_picked', function(msg){
-        $(".hidden").attr("src","static/images/cards/"+msg.cards[0]+"C"+".png");
+        var color = ["C","D","H","S"];
+        $(".hidden").attr("src","static/images/cards/"+msg.cards[0]+color[Math.floor(Math.random() * 4)]+".png");
         for ( var i = 2; i < msg.cards.length; i++ ) {
             add_card("dealer",msg.cards[i]);
         }
@@ -74,6 +78,7 @@ $(document).ready(function(){
         $('form#start').find(':input[type=submit]').prop('disabled', false);
         $('form#start').find(':input[type=number]').prop('disabled', false);
         $('#user_coins').html("Coins: "+coins_now.toString());
+        $('#last_earns').html("Last round earnings: "+(coins_now-coins_prev).toString());
         // document.getElementById("head").innerHTML='<h1>CSIE Online Games --- Black Jack</h1><h4>User: '+username+'<br> Coins: '+coins_now+'</h4>'
     });
 
@@ -92,7 +97,7 @@ $(document).ready(function(){
     });
 
     socket.on('blackjack', function(){
-        alert('You Win!<br>Black Jack!')
+        alert('You Win!\nBlack Jack!')
         coins_now += Math.round(Number(bet_show)*1.5)
     });
 

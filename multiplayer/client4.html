@@ -42,7 +42,7 @@
     <body>
         <h2>聊天室</h2>
             <div id="chat">
-                <textarea id="history" cols="60" rows="20"></textarea>
+                <textarea id="history" cols="60" rows="10"></textarea>
             </div>
 
             <div id="win">
@@ -50,7 +50,11 @@
             </div>
 
             <div id="chat">
-                <textarea id="chatroom" cols="60" rows="20"></textarea>
+                <textarea id="chatroom" cols="60" rows="10"></textarea>
+            </div>
+
+            <div id="chatsend">
+                <button onclick="chat()">send</button>
             </div>
 
             <div id="status">
@@ -239,6 +243,10 @@
                 }
                 else
                     oHistory.val(oHistory.val() + "It's not your turn you little sh*t 凸-_-凸\n");
+            }
+
+            function chat(){
+                ws.send("#CHAT " + oWin.val().trim());
             }
         </script>
     </body>

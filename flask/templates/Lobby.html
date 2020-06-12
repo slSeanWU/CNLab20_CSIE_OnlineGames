@@ -42,6 +42,10 @@
     <body>
         <h2>請選擇人數</h2>
             <div id="sse">
+                <button onclick="two_room()">雙人房</button>
+            </div>
+
+            <div id="sse">
                 <button onclick="five_room()">五人房</button>
             </div>
 
@@ -61,6 +65,11 @@
             }else{
                 // 瀏覽器不支援 WebSocket
                 console.log("您的瀏覽器不支援 WebSocket!");
+            }
+
+            function two_room(){
+                ws.send('#ENTER ' + ({{ username }}) + ' 2');
+                window.location.href = '/texas_play';
             }
 
             function five_room(){

@@ -41,7 +41,7 @@ def message_received(client, server, message):
     elif m[0] == '#ENTER':    join_table(m, server)
     elif m[0] == '#CHAT':
         m.insert(1, clientID2name[client['id']]+":")
-        send_message_to_all(" ".join(m))
+        server.send_message_to_all(" ".join(m))
     else:    update_game_status(m, table_list[name2table[clientID2name[client['id']]]], server)
 
 def gen_card_list():
@@ -100,9 +100,7 @@ def who_win(game_status):
             hand_card = game_status['board'] + player['card']
 
             cards_num = Counter(np.sort(np.array(hand_card) % 13))
-            print(cards_num)
             cards_suit = Counter(np.sort(np.array(hand_card) // 13))
-            print(cards_suit)
 
             if len(cards_num) >= 5:
                 # 檢查順子
@@ -131,7 +129,6 @@ def who_win(game_status):
                     c = []
                     for i in range(0+13*u, 13*(u+1)):
                         if i in hand_card:
-                            print('add {} in to c'.format(i%13))
                             c.append(i%13)
                     
                     if 0 in c:    c += [13]
@@ -141,9 +138,6 @@ def who_win(game_status):
                         if l >= 4:    hands['Straight_Flush'] += [c[i] % 13]
                     if hands['Straight_Flush']: 
                         hands['Straight_Flush'] = hands['Straight_Flush'][::-1]
-
-
-
 
                 keys = list(cards_num.keys())
                 values = list(cards_num.values())
@@ -187,9 +181,6 @@ def who_win(game_status):
                         hands['Two_Pair'].append(keys[values.index(2)])
                     hands['Two_Pair'].append(keys[values.index(1)])
             
-            print(player['username'], hands)
-            print([ num_to_card(i) for i in hand_card])
-
             if biggest_hands:
                 if compare(hands, biggest_hands[0]) == 1:    biggest_hands = (hands, [player['username']])
                 elif compare(hands, biggest_hands[0]) == 0:    biggest_hands[1].append(player['username'])
@@ -297,7 +288,6 @@ def update_game_status(m, game_status, server):
             server.send_message_to_all("#IO %s All-In !!" % game_status['players'][game_status['now_playing']]['username'])
             server.send_message(name2client[game_status['players'][game_status['now_playing']]['username']], "#CHIP %d" % DB[game_status['players'][game_status['now_playing']]['username']]['money'])
 
-    print("DB:", DB)
     # 通知所有人現在下注金額
     server.send_message_to_all("#BID %d" % game_status['now_bid'])
     

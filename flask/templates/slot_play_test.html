@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<title>CSIE Online Games: Slot Machine</title>
+
+<html>
+<div id="head">
+  <h1>CSIE Online Games --- Slot Machine</h1>
+  <h4>User: {{ username }} <br> Coins: {{ coins }}</h4>
+  <h4>Rds Played: {{ rounds_played }} || Total Bet: {{ total_bet }} || Total Earnings: {{ total_earnings }} || Last Round Earnings: {{ last_earnings }}</h4>
+</div>
+
+<div id="game-panel">
+  <h2>The Slot Machine</h2>
+  {% for line in slot %}
+    <p>
+      {{ line }}
+      {% if winning_amounts[ loop.index0 ] > 0 %}
+        +{{ winning_amounts[ loop.index0 ] }} !!
+      {% endif %}
+    </p>
+  {% endfor %}
+</div>
+
+<div id="bet">
+  <h2>The Bet</h2>
+  <p>Let users adjust their bet. (no. of paylines & amount of single bet)</p>
+  <form action="/slot_spin" method="post" id="slot-spin">
+    <label># Paylines:</label>
+    <input type="number" min="1" max="3" value="1" required autocomplete="off" name="num-plines"/>
+    <label>Single bet:</label>
+    <input type="number" min="5" max="50" step="5" value="5" required autocomplete="off" name="single-bet"/>
+    <input type="hidden" value="{{ rounds_played }}" name="rounds-played"/>
+    <input type="hidden" value="{{ total_bet }}" name="total-bet"/>
+    <input type="hidden" value="{{ total_earnings }}" name="total-earnings"/>
+    <input type="hidden" value="{{ last_earnings }}" name="last-earnings"/> <br>
+    <button type="submit">Spin!</button>
+  
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul class=flashes>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
+  </form>
+</div>
+
+<div id="go-back">
+  <p>Feel tired? <br>
+    <a href="/main_menu">
+      <button>Leave game</button>
+    </a>
+  </p>
+</div>
+</html>

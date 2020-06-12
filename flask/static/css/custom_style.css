@@ -98,3 +98,14 @@ p{
 	line-height: 40px;
 	border-radius: 20px;
 }
+.control_panel{
+	/*box-sizing: border-box;*/
+	background-color: white;
+	position: fixed;
+	width: 20vw;
+	height: auto;
+	z-index: 100;
+	top: 2vh;
+	left: 2vw;
+	padding: 2%;
+}

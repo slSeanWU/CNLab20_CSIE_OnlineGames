@@ -34,17 +34,17 @@ body{
 .dealer_cards{
 	top: calc(15vh + 20px);
 }
-.control_panel{
+/*.control_panel{*/
 	/*box-sizing: border-box;*/
-	background-color: white;
+	/*background-color: white;
 	position: fixed;
 	width: 20vw;
 	height: auto;
 	z-index: 100;
 	top: 2vh;
 	left: 2vw;
-	padding: 2%;
-}
+	padding: 2%;*/
+/*}*/
 
 input{
 	font-size: 12px;

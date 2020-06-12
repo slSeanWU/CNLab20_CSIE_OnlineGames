@@ -1,7 +1,7 @@
 from flask import current_app as app
 from flask import render_template, request, flash, redirect, url_for, json
 from models import UserInfo
-from main import db, socketio
+from __main__ import db, socketio
 from flask_login import login_user, logout_user, login_required, current_user
 from flask_socketio import SocketIO, emit, disconnect
 import random

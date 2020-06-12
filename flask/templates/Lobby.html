@@ -68,27 +68,27 @@
             }
 
             function two_room(){
-                ws.send('#ENTER ' + ({{ username }}) + ' 2');
+                var username = {{ username|tojson }};
+                ws.send('#ENTER ' + username + ' 2');
                 window.location.href = '/texas_play';
             }
 
             function five_room(){
                 var username = {{ username|tojson }};
-                var coins = {{ coins|tojson }};
-                ws.send('#ENTER ' + username + ' 2');
-                window.location.href='/texas_play';//.html?username='+({{ username }})+'&coins='+({{ coins }});
+                ws.send('#ENTER ' + username + ' 5');
+                window.location.href='/texas_play';
             }
 
             function seven_room(){
-                //var username = flask['username'];
-                ws.send('#ENTER ' + 'aaa' + ' 7');
-                window.location='client.html';
+                var username = {{ username|tojson }};
+                ws.send('#ENTER ' + username + ' 7');
+                window.location.href='/texas_play';
             }
 
             function nine_room(){
-                //var username = flask['username'];
-                ws.send('#ENTER ' + 'aaa' + ' 9');
-                window.location='client.html';
+                var username = {{ username|tojson }};
+                ws.send('#ENTER ' + username + ' 9');
+                window.location.href='/texas_play';
             }
         </script>
     </body>

@@ -53,16 +53,6 @@
                 <button onclick="nine_room()">九人房</button>
             </div>
 
-        <div id="ready">
-            <h2>Are You Ready?</h2>
-            <a href="/blackjack_play">
-                <button>Play!</button>
-            </a>
-            <a href="/main_menu">
-                <button>Go back to main menu</button>
-            </a>
-        </div>
-
         <script type="text/javascript">
             if ("WebSocket" in window){
                 console.log("您的瀏覽器支援 WebSocket!");
@@ -76,7 +66,7 @@
             function five_room(){
                 //var username = flask['username'];
                 ws.send('#ENTER ' + ({{ username }}) + ' 5');
-                window.location='client';//.html?username='+({{ username }})+'&coins='+({{ coins }});
+                window.location.href='/texas_play';//.html?username='+({{ username }})+'&coins='+({{ coins }});
             }
 
             function seven_room(){

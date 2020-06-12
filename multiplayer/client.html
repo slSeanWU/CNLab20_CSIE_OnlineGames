@@ -41,8 +41,12 @@
     </head>
     <body>
         <h2>聊天室</h2>
-            <div id="chat">
+            <div id="sys_log">
                 <textarea id="history" cols="60" rows="20"></textarea>
+            </div>
+
+            <div id="chat">
+                <textarea id="chatroom" cols="60" rows="20"></textarea>
             </div>
 
             <div id="win">
@@ -77,6 +81,7 @@
             var oHistory = $('#history');
             var oWin = $('#messagewin');
             var oStatus = $('#game_status');
+            var chatroom = $('#chatroom')
             var now_bid = 0;
             var my_bid = 0;
             var chip = 0;
@@ -140,6 +145,8 @@
                         oStatus.val("Board: "+board.toString()+"\n" + "Hand: "+hand.toString()+"\n" + "now bid: "+now_bid+"\n" + "my bid: "+my_bid+"\n" + "chip: "+chip+"\n");
                         console.log(dataReceive);
                     }
+                    else if (dataReceive.match("#CHAT") != null)
+                        chatroom.val(chatroom.val()+dataReceive.substring(5,dataReceive.length)+"\n");
                 };
 
                 ws.onclose = function() {

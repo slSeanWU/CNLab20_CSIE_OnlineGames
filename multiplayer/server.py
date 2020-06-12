@@ -18,8 +18,7 @@ BB, SB = 100, 50
 
 DB = {'aaa': {'money': 1000}, 'bbb': {'money': 2000}, 'ccc': {'money': 3000}, 'ddd': {'money': 4000}, 'eee': {'money': 5000}}
 
-def num_to_card(card_num):
-    return SUITS[card_num//13]+str(card_num%13)
+def num_to_card(card_num):    return SUITS[card_num//13]+str(card_num%13)
 
 # Called for every client connecting (after handshake)
 def new_client(client, server):    pass
@@ -40,6 +39,9 @@ def message_received(client, server, message):
         name2client[m[1]] = client
         update_game_status(m, table_list[name2table[clientID2name[client['id']]]], server)
     elif m[0] == '#ENTER':    join_table(m, server)
+    elif m[0] == '#CHAT':
+        m.insert(1, clientID2name[client['id']]+":")
+        send_message_to_all(" ".join(m))
     else:    update_game_status(m, table_list[name2table[clientID2name[client['id']]]], server)
 
 def gen_card_list():

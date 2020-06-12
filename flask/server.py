@@ -65,13 +65,14 @@ def message_received(client, server, message):
         name2client[m[1]] = client
         update_game_status(m, table_list[name2table[clientID2name[client['id']]]], server)
     elif m[0] == '#ENTER':
+        join_table(m, server)
         with engine.connect() as connection:
             connection.execute("use Casino")
             coin_db = connection.execute("SELECT coins FROM user_info WHERE username='%s'" % m[1])
             coin = [row[0] for row in coin_db][0]
             DB[m[1]] = {}
             DB[m[1]]['money'] = coin
-        join_table(m, server)
+        
     elif m[0] == '#CHAT':
         m.insert(1, clientID2name[client['id']]+":")
         server.send_message_to_all(" ".join(m))
@@ -369,7 +370,7 @@ def update_game_status(m, game_status, server):
     server.send_message(name2client[game_status['players'][game_status['now_playing']]['username']], "#TURN")
 
 PORT=9001
-server = WebsocketServer(PORT)
+server = WebsocketServer(PORT, host='0.0.0.0')
 server.set_fn_new_client(new_client)
 server.set_fn_client_left(client_left)
 server.set_fn_message_received(message_received)

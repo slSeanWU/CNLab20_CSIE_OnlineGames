@@ -12,7 +12,7 @@ from flask import current_app as app
 from flask import render_template, request, flash, redirect, url_for, json
 from models import UserInfo
 from flask_login import login_user, logout_user, login_required, current_user
-
+from flask_sqlalchemy import SQLAlchemy
 
 SUITS = ['黑桃', '愛心', '方塊', '梅花']
 
@@ -22,6 +22,8 @@ name2client = {}
 name2table = {}
 BB, SB = 100, 50
 
+print(UserInfo.query.filter_by(username='123'))
+exit()
 DB = {}
 
 def num_to_card(card_num):    return SUITS[card_num//13]+str(card_num%13)
@@ -43,10 +45,8 @@ def message_received(client, server, message):
     if m[0] == '#NAME':
         clientID2name[client['id']] = m[1]
         name2client[m[1]] = client
-        DB[user.username]['money'] = user.coins
         update_game_status(m, table_list[name2table[clientID2name[client['id']]]], server)
     elif m[0] == '#ENTER':    
-        DB[user.username]['money'] = user.coins
         join_table(m, server)
     elif m[0] == '#CHAT':
         m.insert(1, clientID2name[client['id']]+":")
@@ -299,8 +299,6 @@ def update_game_status(m, game_status, server):
 
     # 通知所有人現在下注金額
     server.send_message_to_all("#BID %d" % game_status['now_bid'])
-    user.coins = DB[user.username]['money']
-    db.session.commit()
 
     # 若為該輪最後一位玩家，turn ++，開牌
     if is_last_player(game_status):

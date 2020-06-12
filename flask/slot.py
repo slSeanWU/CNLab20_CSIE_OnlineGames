@@ -90,6 +90,7 @@ def slot_play():
       'slot': get_slot_spin(),
       'winning_lines': [],
       'winning_amounts': [0, 0, 0],
+      'play_line': 1
     }
   else:
     stats = json.loads(request.args.get('json_str'))
@@ -103,7 +104,8 @@ def slot_play():
     last_earnings=stats['last_earnings'],
     slot=stats['slot'],
     winning_lines=stats['winning_lines'],
-    winning_amounts=stats['winning_amounts']
+    winning_amounts=stats['winning_amounts'],
+    play_line=stats['play_line']
   )
 
 @app.route('/slot_spin', methods=['POST'])
@@ -114,12 +116,14 @@ def slot_spin():
   single_bet = int(request.form.get('single-bet'))
   if user.coins < num_plines * single_bet:
     json_obj = {
-      'rounds_played': int(request.form.get('rounds-played')),
-      'total_bet': int(request.form.get('total-bet')),
-      'total_earnings': int(request.form.get('total-earnings')),
+      'rounds_played': 0,
+      'total_bet': 0,
+      'total_earnings': 0,
       'last_earnings': 0,
       'slot': get_slot_spin(),
-      'winning_lines': []
+      'winning_lines': [],
+      'winning_amounts': [0,0,0],
+      'play_line': 1
     }
     flash('No enough coins. Time to TOP-UP!!')
 
@@ -163,7 +167,8 @@ def slot_spin():
     'last_earnings': last_earnings,
     'slot': slot,
     'winning_lines': winning_lines,
-    'winning_amounts': winning_amounts
+    'winning_amounts': winning_amounts,
+    'play_line': num_plines
   }
   app.logger.info(json_obj)
 

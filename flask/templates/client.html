@@ -131,6 +131,8 @@
                         $('#history').val($('#history').val() + "It's your turn!" + "\n");
                         action = true;
                         oStatus.val("Board: "+board.toString()+"\n" + "Hand: "+hand.toString()+"\n" + "now bid: "+now_bid+"\n" + "my bid: "+my_bid+"\n" + "chip: "+chip+"\n");
+                        if (chip == 0)
+                            action = false;
                     }
                     else if (dataReceive.match("#BOARD") != null)
                     {
@@ -248,6 +250,7 @@
 
             function chat(){
                 ws.send("#CHAT " + oWin.val().trim());
+                oWin.val('');
             }
         </script>
     </body>

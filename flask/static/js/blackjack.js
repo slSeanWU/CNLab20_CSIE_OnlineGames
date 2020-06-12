@@ -32,10 +32,14 @@ $(document).ready(function(){
         add_card("player",msg.player[1]);
         add_card("dealer",msg.dealer[1]);
         // document.getElementById("dealer").innerHTML=msg.dealer;
-        $('form#take').find(':input[type=submit]').prop('disabled', false);
-        $('form#stop').find(':input[type=submit]').prop('disabled', false);
+        socket.emit('check_start_status');
         // document.getElementById("log").innerHTML='';
         // $('#log').append('<br>' + $('<div/>').text('Received #: Start a new game.').html());
+    });
+
+    socket.on('continue_game', function(){
+        $('form#take').find(':input[type=submit]').prop('disabled', false);
+        $('form#stop').find(':input[type=submit]').prop('disabled', false);
     });
 
     socket.on('server_response', function(msg, cb){
@@ -62,12 +66,12 @@ $(document).ready(function(){
     });
 
     socket.on('dealer_picked', function(msg){
-        var color = ["C","D","H","S"];
-        $(".hidden").attr("src","static/images/cards/"+msg.cards[0]+color[Math.floor(Math.random() * 4)]+".png");
+        //var color = ["C","D","H","S"];
+        //$(".hidden").attr("src","static/images/cards/"+msg.cards[0]+color[Math.floor(Math.random() * 4)]+".png");
         for ( var i = 2; i < msg.cards.length; i++ ) {
             add_card("dealer",msg.cards[i]);
         }
-        
+        socket.emit('check_result');
     });
 
     socket.on('finish_game', function(msg){
@@ -82,23 +86,42 @@ $(document).ready(function(){
         // document.getElementById("head").innerHTML='<h1>CSIE Online Games --- Black Jack</h1><h4>User: '+username+'<br> Coins: '+coins_now+'</h4>'
     });
 
-    socket.on('draw', function(){
+    socket.on('draw', function(msg){
+        var color = ["C","D","H","S"];
+        $(".hidden").attr("src","static/images/cards/"+msg.cards[0]+color[Math.floor(Math.random() * 4)]+".png");
         alert('Draw!');
     });
 
-    socket.on('player_win', function(){
-        alert('You Win!')
+    socket.on('blackjack', function(msg){
+        var color = ["C","D","H","S"];
+        $(".hidden").attr("src","static/images/cards/"+msg.cards[0]+color[Math.floor(Math.random() * 4)]+".png");
+        alert('You Win!\nBlack Jack!');
+        coins_now += Math.round(Number(bet_show)*1.5)
+    });
+
+    socket.on('player_win', function(msg){
+        var color = ["C","D","H","S"];
+        $(".hidden").attr("src","static/images/cards/"+msg.cards[0]+color[Math.floor(Math.random() * 4)]+".png");
+        alert('You Win!');
         coins_now += Number(bet_show)
     });
 
-    socket.on('dealer_win', function(){
-        alert('Dealer Win!')
+    socket.on('dealer_win', function(msg){
+        var color = ["C","D","H","S"];
+        $(".hidden").attr("src","static/images/cards/"+msg.cards[0]+color[Math.floor(Math.random() * 4)]+".png");
+        alert('Dealer Win!');
         coins_now -= Number(bet_show)
     });
 
-    socket.on('blackjack', function(){
-        alert('You Win!\nBlack Jack!')
-        coins_now += Math.round(Number(bet_show)*1.5)
+    socket.on('bet_able', function(){
+        $('form#start').find(':input[type=submit]').prop('disabled', true);
+        $('form#start').find(':input[type=number]').prop('disabled', true);
+        socket.emit('start_game');
+    });
+
+    socket.on('bet_refuse', function(){
+        alert('Coins Not Enough!');
+        document.getElementById('bet').value = coins_now;
     });
 
 /*
@@ -113,10 +136,9 @@ $(document).ready(function(){
     });
 */
     $('form#start').submit(function(event){
-        $('form#start').find(':input[type=submit]').prop('disabled', true);
-        $('form#start').find(':input[type=number]').prop('disabled', true);
         bet_show = $('#bet').val();
-        socket.emit('start_game', {'bet_coin': bet_show});
+        socket.emit('check_bet', {'bet_coin': bet_show})
+        //socket.emit('start_game', {'bet_coin': bet_show});
         return false;
     });
 

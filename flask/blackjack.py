@@ -77,41 +77,52 @@ def test_connect():
 def test_disconnect():
     print('Client disconnected', request.sid)
 
-@socketio.on('start_game', namespace='/blackjack')
-def start_game(message):
+@socketio.on('check_bet', namespace='/blackjack')
+def check_bet(message):
     global bet
+    user = current_user
+    try_bet = int(message['bet_coin'])
+    if user.coins >= try_bet:
+        bet[user.username] = try_bet
+        emit('bet_able')
+    else:
+        emit('bet_refuse')
+
+@socketio.on('start_game', namespace='/blackjack')
+def start_game():
     global cards_player
     global cards_dealer
     user = current_user
-    bet[user.username] = message['bet_coin']
     cards_player[user.username] = []
     cards_dealer[user.username] = []
     cards_player[user.username] = random.choices(cards, k=2)[:]
     cards_dealer[user.username] = random.choices(cards, k=2)[:]
     cards_dealer_show = cards_dealer[user.username].copy()
     cards_dealer_show[0] = 'X'
-    if blackjack_sum(cards_player[user.username]) == 21 and blackjack_sum(cards_dealer[user.username]) == 21:
-        emit('start', {'player': cards_player[user.username], 'dealer': cards_dealer[user.username]})
-        record(int(bet[user.username]), 0)
+    emit('start', {'player': cards_player[user.username], 'dealer': cards_dealer_show})
+
+@socketio.on('check_start_status', namespace='/blackjack')
+def check_start_status():
+    user = current_user
+    player_total = blackjack_sum(cards_player[user.username])
+    dealer_total = blackjack_sum(cards_dealer[user.username])
+    if player_total == 21 and dealer_total == 21:
+        record(bet[user.username], 0)
         emit('server_response', {'data': 'Draw!'})
-        emit('draw')
+        emit('draw', {'cards': cards_dealer[user.username]})
         emit('finish_game', {'res': 'Draw'})
     elif blackjack_sum(cards_player[user.username]) == 21:
-        emit('start', {'player': cards_player[user.username], 'dealer': cards_dealer[user.username]})
-        record(int(bet[user.username]), round(int(bet[user.username])*1.5))
+        record(bet[user.username], round(bet[user.username]*1.5))
         emit('server_response', {'data': 'You Win! BlackJack!'})
-        emit('blackjack')
-        emit('finish_game', {'res': 'Win ' + str(round(int(bet[user.username])*1.5)) + ' Coins'})
+        emit('blackjack', {'cards': cards_dealer[user.username]})
+        emit('finish_game', {'res': 'Win ' + str(round(bet[user.username]*1.5)) + ' Coins'})
     elif blackjack_sum(cards_dealer[user.username]) == 21:
-        emit('start', {'player': cards_player[user.username], 'dealer': cards_dealer[user.username]})
-        record(int(bet[user.username]), -1*int(bet[user.username]))   
+        record(bet[user.username], -1*bet[user.username])   
         emit('server_response', {'data': 'Dealer Win!'})
-        emit('dealer_win')         
-        emit('finish_game', {'res': 'Lose ' + bet[user.username] + ' Coins'})
+        emit('dealer_win', {'cards': cards_dealer[user.username]})         
+        emit('finish_game', {'res': 'Lose ' + str(bet[user.username]) + ' Coins'})
     else:
-        emit('start', {'player': cards_player[user.username], 'dealer': cards_dealer_show})
-    
-    db.session.commit()
+        emit('continue_game')
 
 @socketio.on('player_take_one', namespace='/blackjack')
 def player_take_one():
@@ -128,36 +139,38 @@ def player_take_one():
 def player_stop():
     global cards_dealer
     user = current_user
-
     while blackjack_sum(cards_dealer[user.username]) < 17:
         cards_dealer[user.username].append(random.choice(cards))
-    emit('dealer_picked', {'cards': cards_dealer[user.username], 'total': blackjack_sum(cards_dealer[user.username])})
+    emit('dealer_picked', {'cards': cards_dealer[user.username]})
 
+@socketio.on('check_result', namespace='/blackjack')
+def check_result():
+    user = current_user
     player_total = blackjack_sum(cards_player[user.username])
     dealer_total = blackjack_sum(cards_dealer[user.username])
     if player_total > 21:
-        record(int(bet[user.username]), -1*int(bet[user.username]))
+        record(bet[user.username], -1*bet[user.username])
         emit('server_response', {'data': 'Dealer Win!'})
-        emit('dealer_win')
-        emit('finish_game', {'res': 'Lose ' + bet[user.username] + ' Coins'})
+        emit('dealer_win', {'cards': cards_dealer[user.username]})
+        emit('finish_game', {'res': 'Lose ' + str(bet[user.username]) + ' Coins'})
     elif dealer_total > 21:
-        record(int(bet[user.username]), int(bet[user.username]))
+        record(bet[user.username], bet[user.username])
         emit('server_response', {'data': 'You Win!'})
-        emit('player_win')
-        emit('finish_game', {'res': 'Win ' + bet[user.username] + ' Coins'})
+        emit('player_win', {'cards': cards_dealer[user.username]})
+        emit('finish_game', {'res': 'Win ' + str(bet[user.username]) + ' Coins'})
     else:
         if dealer_total > player_total:
-            record(int(bet[user.username]), -1*int(bet[user.username]))
+            record(bet[user.username], -1*bet[user.username])
             emit('server_response', {'data': 'Dealer Win!'})
-            emit('dealer_win')         
-            emit('finish_game', {'res': 'Lose ' + bet[user.username] + ' Coins'})
+            emit('dealer_win', {'cards': cards_dealer[user.username]})         
+            emit('finish_game', {'res': 'Lose ' + str(bet[user.username]) + ' Coins'})
         elif player_total > dealer_total:
-            record(int(bet[user.username]), int(bet[user.username]))
+            record(bet[user.username], bet[user.username])
             emit('server_response', {'data': 'You Win!'})
-            emit('player_win')
-            emit('finish_game', {'res': 'Win ' + bet[user.username] + ' Coins'})
+            emit('player_win', {'cards': cards_dealer[user.username]})
+            emit('finish_game', {'res': 'Win ' + str(bet[user.username]) + ' Coins'})
         else:
-            record(int(bet[user.username]), 0)
+            record(bet[user.username], 0)
             emit('server_response', {'data': 'Draw!'})
-            emit('draw')
+            emit('draw', {'cards': cards_dealer[user.username]})
             emit('finish_game', {'res': 'Draw'})

@@ -46,7 +46,7 @@
             </div>
 
             <div id="win">
-                <textarea id="messagewin" cols="10" rows="1"></textarea>
+                <textarea id="chat_input" cols="10" rows="1"></textarea>
             </div>
 
             <div id="chat">
@@ -67,6 +67,7 @@
 
             <div id="raise">
                 <button onclick="raise()">RAISE</button>
+
             </div>
 
             <div id="fold">
@@ -83,7 +84,7 @@
 
         <script type="text/javascript">
             var oHistory = $('#history');
-            var oWin = $('#messagewin');
+            var oWin = $('#chat_input');
             var oStatus = $('#game_status');
             var chatroom = $('#chatroom');
             var now_bid = 0;
@@ -95,7 +96,7 @@
 
             if ("WebSocket" in window){
                 console.log("您的瀏覽器支援 WebSocket!");
-                var ws = new WebSocket("ws://10.5.0.66:9001");
+                var ws = new WebSocket("ws://192.168.1.45:9001");
                 ws.onopen = function(){
                     console.log("websocket 已連線上");
                     //var username = flask['username'];

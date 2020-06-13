@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Texas</title>
+	<link rel="stylesheet" type="text/css" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+	<link rel="stylesheet" href="static/css/style.css">
+	<link rel="stylesheet" href="static/css/custom_style.css">
+	<link rel="stylesheet" href="static/css/blackjack.css">
+	<link rel="stylesheet" href="static/css/texas.css">
+	<script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.dev.js"></script>
+
+</head>
+<body>
+	<div class="control_panel round-shadow">
+		<div class="panel-label">Chat Room</div>
+		<input type="text" id ="username-store" value='{{ username}}' style="display: none;">
+		<div class="panel-body"><textarea id="chatroom" cols="60" rows="10" disabled></textarea></div>
+		<div class="panel-label"><input type="text" id="chat_input"></input><button id="chat_send">send</button></div>
+
+	</div>
+	<div class="card-table"></div>
+	<div class="player_container" id="player-table">
+		<div class="player" style="display: none;" id="example_user">
+			<div class="player-label title" style="text-align: center;">None</div>
+			<div class="player-label">Coins:<span class="coins">??</span></div>
+			<div class="player-label">Bid:<span class="bid">??</span></div>
+			<div class="player-label">Status:<span class="status">??</span></div>
+			<div class="player-label big-blind" style="color: green; text-align: center; display: none">大盲</div>
+			<div class="player-label small-blind" style="color: red; text-align: center; display: none;">小盲</div>
+			<div class="show_cards"></div>
+		</div>
+	</div>
+	<div class="dealer_cards cards" id="dealer">
+		<img src="static/images/cards/gray_back.png" class="show_card" style="display: none;" id="example-card"> 
+		
+	</div>
+	<div class="table_cards cards" id="player">
+	</div>
+	<div class="mine_container">
+		<div class="player mine" id="player_me">
+			<div class="player-label title" style="text-align: center;">None</div>
+			<div class="player-label">Coins:<span class="coins">??</span></div>
+			<div class="player-label">Bid:<span class="bid">??</span></div>
+			<div class="player-label">Status:<span class="status">??</span></div>
+			<div class="player-label big-blind" style="color: green; text-align: center; display: none">大盲</div>
+			<div class="player-label small-blind" style="color: red; text-align: center; display: none;">小盲</div>
+		</div>
+		<div class="player mine">
+			<div class="player-label" style="text-align: center;">Panel</div>
+			<div class="player-label">
+                <button class="panel-btn" onclick="call()">CALL</button>
+            </div>
+            <div class="player-label">
+                <button class="panel-btn" onclick="raise()">RAISE</button>
+            </div>
+            <div class="player-label">
+                <input type="number" id="raise_input" placeholder="raise money">
+            </div>
+            <div class="player-label">
+                <button class="panel-btn" onclick="fold()">FOLD</button>
+            </div>
+            <div class="player-label">
+                <button class="panel-btn" onclick="check()">CHECK</button>
+            </div>
+            <div class="player-label">
+                <button class="panel-btn" onclick="allin()">ALL-IN</button>
+            </div>
+			
+		</div>
+	</div>
+	<div id="special-msg">Waiting...</div>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+	<script type="text/javascript" src="static/js/texas.js"> </script>
+</body>
+</html>

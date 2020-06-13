@@ -20,4 +20,4 @@ def texas_play():
   Displays the game's rules (accessible from main menu).
   '''
   user = current_user
-  return render_template('client.html', username=user.username, coins=user.coins)
+  return render_template('client_new.html', username=user.username, coins=user.coins)

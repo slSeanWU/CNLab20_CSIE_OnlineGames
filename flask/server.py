@@ -334,7 +334,7 @@ def update_game_status(m, game_status, server):
             for player in game_status['players']:    server.send_message(name2client[player['username']], "#IO %s entered the room" % m[1])
             game_status['players'].append({'username': m[1], 'card': None, 'in_game': False, 'pool': 0, 'action_yet': False})
         # 人數到齊
-        if m[1] in name2client and len(game_status['players']) == game_status['player_num']:
+        if action == '#NAME' and m[1] in name2client and len(game_status['players']) == game_status['player_num']:
             init_game(game_status, server)
             return None
         else:    return None

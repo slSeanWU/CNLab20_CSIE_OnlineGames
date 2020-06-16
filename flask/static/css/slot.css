@@ -42,6 +42,23 @@ label{
 .row-1,.row-2{
 	margin-top: 1%;
 }
+table, th, td {
+  border: 1px solid black;
+}
+table, th, td {
+  border: 1px solid black;
+  border-collapse: collapse;
+}
+th {
+  text-align: left;
+}
+img {
+  width: 25%;
+  height: 25%;
+}
+th, td {
+  padding: 5px;
+}
 /*body{
 	background-color: #111;
 }*/

@@ -24,24 +24,25 @@ name2client = {}
 name2table = {}
 BB, SB = 10, 5
 
+DB = {}
 engine = sqlalchemy.create_engine('mysql+pymysql://root:final@35.236.142.37/')
 
-DB = {}
 
 def send_message_to_players(game_status, message, server):
     for player in game_status['players']:
-        server.send_message(name2client[player['username']], message)
+        if player['username'] in name2client.keys():
+            server.send_message(name2client[player['username']], message)
 
 def adjust_coins(username, num):
-    engine = sqlalchemy.create_engine('mysql+pymysql://root:final@35.236.142.37/')
+    print("%s adjust to %d" % (username, num))
     with engine.connect() as connection:
         connection.execute("USE Casino")
         coin_db = connection.execute("SELECT coins FROM user_info WHERE username='%s'" % username)
         coin = [row[0] for row in coin_db][0]
         connection.execute("UPDATE user_info SET coins=%d WHERE username='%s'" % (num, username))
 
+# TODO
 def built_game_record(game_status):
-    engine = sqlalchemy.create_engine('mysql+pymysql://root:final@35.236.142.37/')
     with engine.connect() as connection:
         connection.execute("USE Casino")
         texas_game_record
@@ -58,11 +59,20 @@ def new_client(client, server):    pass
 # Called for every client disconnecting
 def client_left(client, server):
     if client['id'] in clientID2name.keys():
-        if clientID2name[client['id']] in name2table.keys():
-            print('?????????', table_list, name2table)
-            update_game_status('#FOLD', table_list[name2table[clientID2name[client['id']]]], server)
+        name = clientID2name[client['id']]
+        game_status = {}
+        if name in name2table.keys():
+            if name2table[name] in table_list.keys():
+                for player in table_list[name2table[name]]['players']:
+                    if player['username'] == name:
+                        game_status = table_list[name2table[name]]
+                        player['in_game'] = False
+                        break
         del name2client[clientID2name[client['id']]]
+        del name2table[clientID2name[client['id']]]
         del clientID2name[client['id']]
+        if game_status and game_status['players'][game_status['now_playing']]['username'] == name:
+            update_game_status("", game_status, server)
 
 # Called when a client sends a message
 def message_received(client, server, message):
@@ -72,9 +82,6 @@ def message_received(client, server, message):
     if m[0] == '#NAME':
         clientID2name[client['id']] = m[1]
         name2client[m[1]] = client
-        # print(name2table)
-        # print(clientID2name)
-        # print(client)
         update_game_status(m, table_list[name2table[clientID2name[client['id']]]], server)
     elif m[0] == '#ENTER':
         join_table(m, server)
@@ -88,11 +95,12 @@ def message_received(client, server, message):
         m.insert(1, clientID2name[client['id']]+":")
         send_message_to_players(table_list[name2table[clientID2name[client['id']]]], " ".join(m), server)
     else:
-        if len(m) > 1:
-            if m[0] == '#CONTINUE' and m[1] in name2table.keys():
+        if m[0] == '#CONTINUE':
+            if m[1] in name2table.keys() and name2table[m[1]] in table_list.keys():
                 update_game_status(m, table_list[name2table[clientID2name[client['id']]]], server)
         else:
-            update_game_status(m, table_list[name2table[clientID2name[client['id']]]], server)
+            if name2table[clientID2name[client['id']]] in table_list.keys():
+                update_game_status(m, table_list[name2table[clientID2name[client['id']]]], server)
 
 def gen_card_list():
     # return [0, 1, 2, 3, 4, 5] + [6,7,8,9,10,11,12] + np.arange(13,52).tolist()
@@ -201,7 +209,7 @@ def who_win(game_status):
                             hands['Two_Pair'].append(0)
                             hands['Two_Pair'].append(keys[::-1][values[::-1].index(2)])
                         else:
-                            hands['Two_Pair'].append(keys[values[::-1].index(2)])
+                            hands['Two_Pair'].append(keys[::-1][values[::-1].index(2)])
                             hands['Two_Pair'].append(keys[values.index(2)])
                         hands['Two_Pair'].append(keys[::-1][values[::-1].index(1)])
                     else:
@@ -225,9 +233,9 @@ def who_win(game_status):
                 if 2 in values:
                     if keys[values.index(2)] == 0:
                         hands['Two_Pair'].append(0)
-                        hands['Two_Pair'].append(keys[values[::-1].index(2)])
+                        hands['Two_Pair'].append(keys[::-1][values[::-1].index(2)])
                     else:
-                        hands['Two_Pair'].append(keys[values[::-1].index(2)])
+                        hands['Two_Pair'].append(keys[::-1][values[::-1].index(2)])
                         hands['Two_Pair'].append(keys[values.index(2)])
                     hands['Two_Pair'].append(keys[values.index(1)])
             
@@ -241,7 +249,6 @@ def who_win(game_status):
 
 def join_table(m, server):
     for table_id, game_status in table_list.items():
-        print(table_id, game_status)
         if game_status['turn'] == -1 and game_status['player_num'] == int(m[2]) and len(game_status['players']) != int(m[2]):
             name2table[m[1]] = table_id
             update_game_status(m, game_status, server)
@@ -256,7 +263,6 @@ def join_table(m, server):
         'players': [],
         'board': []
     }
-
     if len(table_list) != 0:
         max_index = max(table_list.keys())
     else:
@@ -267,11 +273,12 @@ def join_table(m, server):
 
 def init_game(game_status, server):
     for player in game_status['players']:
-        if player['username'] not in name2client.keys():
+        if player['username'] not in name2table.keys():
             send_message_to_players(game_status, "#END", server)
-            del table_list[name2table[player['username']]]
-            del name2table[player['username']]
-            return None
+            for p in game_status['players']:
+                if p['username'] in name2table.keys():
+                    del table_list[name2table[p['username']]]
+                    return None
 
     card_list = gen_card_list()
     random.shuffle(card_list)
@@ -279,7 +286,6 @@ def init_game(game_status, server):
         card_list, player['card'] = give_card(card_list)
         player['in_game'] = True
         print('initializing game...')
-        print(player)
 
     game_status['turn'] = 0
     game_status['now_bid'] = BB
@@ -319,8 +325,8 @@ def init_game(game_status, server):
 
 
 def update_game_status(m, game_status, server):
-    print(name2client)
-    action = m[0]
+    action = ""
+    if m:    action = m[0]
 
     if game_status['turn'] == -1:   # 遊戲還沒開始
         send_message_to_players(game_status, "#ALL_NAME " + " ".join([player['username'] for player in game_status['players']]), server)
@@ -420,25 +426,28 @@ def update_game_status(m, game_status, server):
                 if player['pool'] not in bids and player['in_game']:
                     bids.append(player['pool'])
             bids.sort()
+            print("bids, p_pools", bids, p_pools)
             pools = np.zeros(len(bids))
             bids.insert(0,0)
-            for i in range(1,len(bids)):
+            for i in range(1,len(bids)): 
                 w = bids[i] - bids[i-1]
                 for j in range(len(p_pools)):
                     pools[i-1] += p_pools[j] if p_pools[j] < w else w
                     p_pools[j] -= p_pools[j] if p_pools[j] < w else w
+            print("bids, p_pools, pools", bids, p_pools, pools)
             del bids[0]
             for i in range(len(bids)):
                 w_w = []
                 p_w = []
                 for player in game_status['players']:
-                    if player['pool'] > bids[i] and player['in_game']:
+                    if player['pool'] >= bids[i] and player['in_game']:
                         p_w.append(player['username'])
-                    if player['username'] in winners and player['pool'] > bids[i]:
+                    if player['username'] in winners and player['pool'] >= bids[i]:
                         w_w.append(player['username'])
+                print("w_w, p_w", w_w, p_w)
                 for name in w_w:
                     DB[name]['money'] += pools[i] / len(w_w)
-                if w_w:
+                if not w_w:
                     for name in p_w:
                         DB[name]['money'] += pools[i] / len(p_w)
             for player in game_status['players']:
@@ -446,15 +455,14 @@ def update_game_status(m, game_status, server):
                 player['in_game'] = False
 
         for player in game_status['players']:
-            if player['username'] not in name2client.keys():
+            if player['username'] not in name2table.keys():
                 send_message_to_players(game_status, "#END", server)
-                del table_list[name2table[player['username']]]
-                del name2table[player['username']]
-                return None
+                for p in game_status['players']:
+                    if p['username'] in name2table.keys():
+                        del table_list[name2table[p['username']]]
+                        return None
 
-        # TO BE FIXED
         in_game_players = 0
-        print("DEBUG:", action, in_game_players)
         if action == '#CONTINUE':
             if m[1] in name2table.keys():
                 for player in game_status['players']:
@@ -462,12 +470,11 @@ def update_game_status(m, game_status, server):
                         player['in_game'] = True
                     if player['in_game']:    in_game_players += 1
         elif action == '#LEAVE':
-            player = game_status['players'][0]
             send_message_to_players(game_status, "#END", server)
-            del table_list[name2table[player['username']]]
             for player in game_status['players']:
-                del name2table[player['username']]
-
+                if player['username'] in name2table.keys():
+                    del table_list[name2table[player['username']]]
+                    return None
 
         if in_game_players == game_status['player_num']:
             init_game(game_status, server)

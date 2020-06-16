@@ -86,7 +86,7 @@ function add_user(user_id, user_name, is_self){
 
 if ("WebSocket" in window){
     console.log("您的瀏覽器支援 WebSocket!");
-    var ws = new WebSocket("ws://10.5.0.66:9001");
+    var ws = new WebSocket("ws://169.254.132.196:9001");
     ws.onopen = function(){
         console.log("websocket 已連線上");
         //var username = flask['username'];
@@ -113,6 +113,7 @@ if ("WebSocket" in window){
         else if (dataReceive.match("#HAND") != null)
         {
             // new game
+            alert("Game Start!");
             hand = []
             board = []
             my_bid = 0
@@ -176,9 +177,7 @@ if ("WebSocket" in window){
             player_num = player_names.length;
         }
         else if (dataReceive.match("#START") != null){
-            $("#special-msg").hide();
-            alert("Ready to start!");
-            
+            $("#special-msg").hide();          
             
             for (var i = 0; i < player_num; i++) {
                 if(i.toString()!=player_id){
@@ -194,6 +193,7 @@ if ("WebSocket" in window){
             $("#player_me").css("opacity","1");
             $( ".added" ).remove();
             $( ".show_cards" ).hide();
+
         }
         else if (dataReceive.match("#ALL_STATUS") != null){
             var all_status = dataReceive.split(" ").slice(1);

@@ -62,13 +62,16 @@ def member_center():
       ).filter_by(
         user_id=user.id
       ).first()
+    
+    slot_bet = slot_results.slot_bet or 0
+    tmp = slot_results.slot_earnings or 0
 
     return render_template('member_center.html', 
       username=user.username,
       coins=user.coins,
       slot_rds=slot_results.slot_rds,
-      slot_bet=slot_results.slot_bet or 0,
-      slot_earnings=(slot_results.slot_earnings - slot_results.slot_bet) or 0,
+      slot_bet=slot_bet,
+      slot_earnings=(tmp - slot_bet) or 0,
       blackjack_rds=blackjack_results.blackjack_rds,
       blackjack_bet=blackjack_results.blackjack_bet or 0,
       blackjack_earnings=blackjack_results.blackjack_earnings or 0

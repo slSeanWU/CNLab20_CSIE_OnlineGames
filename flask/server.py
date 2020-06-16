@@ -18,7 +18,7 @@ import sqlalchemy
 SUITS = ['C', 'D', 'H', 'S']
 NUMS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
 
-table_list = []
+table_list = {}
 clientID2name = {}
 name2client = {}
 name2table = {}
@@ -28,10 +28,24 @@ engine = sqlalchemy.create_engine('mysql+pymysql://root:final@35.236.142.37/')
 
 DB = {}
 
+def send_message_to_players(game_status, message, server):
+    for player in game_status['players']:
+        server.send_message(name2client[player['username']], message)
+
 def adjust_coins(username, num):
     engine = sqlalchemy.create_engine('mysql+pymysql://root:final@35.236.142.37/')
     with engine.connect() as connection:
         connection.execute("USE Casino")
+        coin_db = connection.execute("SELECT coins FROM user_info WHERE username='%s'" % username)
+        coin = [row[0] for row in coin_db][0]
+        connection.execute("UPDATE user_info SET coins=%d WHERE username='%s'" % (num, username))
+
+def built_game_record(game_status):
+    engine = sqlalchemy.create_engine('mysql+pymysql://root:final@35.236.142.37/')
+    with engine.connect() as connection:
+        connection.execute("USE Casino")
+        texas_game_record
+        connection.execute("123")
         coin_db = connection.execute("SELECT coins FROM user_info WHERE username='%s'" % username)
         coin = [row[0] for row in coin_db][0]
         connection.execute("UPDATE user_info SET coins=%d WHERE username='%s'" % (num, username))
@@ -44,6 +58,9 @@ def new_client(client, server):    pass
 # Called for every client disconnecting
 def client_left(client, server):
     if client['id'] in clientID2name.keys():
+        if clientID2name[client['id']] in name2table.keys():
+            print('?????????', table_list, name2table)
+            update_game_status('#FOLD', table_list[name2table[clientID2name[client['id']]]], server)
         del name2client[clientID2name[client['id']]]
         del clientID2name[client['id']]
 
@@ -69,8 +86,13 @@ def message_received(client, server, message):
             DB[m[1]]['money'] = coin
     elif m[0] == '#CHAT':
         m.insert(1, clientID2name[client['id']]+":")
-        server.send_message_to_all(" ".join(m))
-    else:    update_game_status(m, table_list[name2table[clientID2name[client['id']]]], server)
+        send_message_to_players(table_list[name2table[clientID2name[client['id']]]], " ".join(m), server)
+    else:
+        if len(m) > 1:
+            if m[0] == '#CONTINUE' and m[1] in name2table.keys():
+                update_game_status(m, table_list[name2table[clientID2name[client['id']]]], server)
+        else:
+            update_game_status(m, table_list[name2table[clientID2name[client['id']]]], server)
 
 def gen_card_list():
     # return [0, 1, 2, 3, 4, 5] + [6,7,8,9,10,11,12] + np.arange(13,52).tolist()
@@ -89,7 +111,7 @@ def turn_card(card_list):
 def is_last_player(game_status):
     for player in game_status['players']:
         if player['in_game']:
-            if player['action_yet'] and player['pool'] == game_status['now_bid']:    pass
+            if player['action_yet'] and (player['pool'] == game_status['now_bid'] or DB[player['username']]['money'] == 0):    pass
             else:    return False
     return True
 
@@ -218,9 +240,10 @@ def who_win(game_status):
     return biggest_hands[1]
 
 def join_table(m, server):
-    for game_status in table_list:
+    for table_id, game_status in table_list.items():
+        print(table_id, game_status)
         if game_status['turn'] == -1 and game_status['player_num'] == int(m[2]) and len(game_status['players']) != int(m[2]):
-            name2table[m[1]] = table_list.index(game_status)
+            name2table[m[1]] = table_id
             update_game_status(m, game_status, server)
             return 0
     game_status = {
@@ -233,11 +256,23 @@ def join_table(m, server):
         'players': [],
         'board': []
     }
-    name2table[m[1]] = len(table_list)
-    table_list.append(game_status)
+
+    if len(table_list) != 0:
+        max_index = max(table_list.keys())
+    else:
+        max_index = 0
+    table_list[max_index + 1] = game_status
+    name2table[m[1]] = max_index + 1
     update_game_status(m, game_status, server)
 
 def init_game(game_status, server):
+    for player in game_status['players']:
+        if player['username'] not in name2client.keys():
+            send_message_to_players(game_status, "#END", server)
+            del table_list[name2table[player['username']]]
+            del name2table[player['username']]
+            return None
+
     card_list = gen_card_list()
     random.shuffle(card_list)
     for player in game_status['players']: # 發牌
@@ -253,7 +288,7 @@ def init_game(game_status, server):
     game_status['now_playing'] = game_status['SB']
     game_status['board'] = turn_card(card_list)
 
-    server.send_message_to_all("#START")
+    send_message_to_players(game_status, "#START", server)
     for player in game_status['players']:
         player['in_game'] = True
         player['action_yet'] = False
@@ -265,7 +300,7 @@ def init_game(game_status, server):
 
 
     # 大盲注，小盲注
-    server.send_message_to_all("#BID %d" % BB)
+    send_message_to_players(game_status, "#BID %d" % BB, server)
     server.send_message(name2client[game_status['players'][game_status['BB']]['username']], "#BLIND %d" % BB)
     server.send_message(name2client[game_status['players'][game_status['SB']]['username']], "#BLIND %d" % SB)
     
@@ -274,19 +309,21 @@ def init_game(game_status, server):
     DB[game_status['players'][game_status['SB']]['username']]['money'] -= SB
     game_status['players'][game_status['SB']]['pool'] += SB
     server.send_message(name2client[game_status['players'][game_status['now_playing']]['username']], "#TURN")
-    server.send_message_to_all("#ALL_NAME " + " ".join([player['username'] for player in game_status['players']]))
-    server.send_message_to_all("#ALL_STATUS " + " ".join(["1" if player['in_game'] else "0" for player in game_status['players']]))
-    server.send_message_to_all("#ALL_BID " + " ".join([str(player['pool']) for player in game_status['players']]))
-    server.send_message_to_all("#ALL_MONEY " + " ".join([str(DB[player['username']]['money']) for player in game_status['players']]))
-    server.send_message_to_all("#NOW_PLAY %d" % game_status['now_playing'])
-    server.send_message_to_all("#ALL_BLIND %d %d" % (game_status['BB'], game_status['SB']))
+    
+    send_message_to_players(game_status, "#ALL_NAME " + " ".join([player['username'] for player in game_status['players']]), server)
+    send_message_to_players(game_status, "#ALL_STATUS " + " ".join(["1" if player['in_game'] else "0" for player in game_status['players']]), server)
+    send_message_to_players(game_status, "#ALL_BID " + " ".join([str(player['pool']) for player in game_status['players']]), server)
+    send_message_to_players(game_status, "#ALL_MONEY " + " ".join([str(DB[player['username']]['money']) for player in game_status['players']]), server)
+    send_message_to_players(game_status, "#NOW_PLAY %d" % game_status['now_playing'], server)
+    send_message_to_players(game_status, "#ALL_BLIND %d %d" % (game_status['BB'], game_status['SB']), server)
+
 
 def update_game_status(m, game_status, server):
     print(name2client)
     action = m[0]
 
     if game_status['turn'] == -1:   # 遊戲還沒開始
-        server.send_message_to_all("#ALL_NAME " + " ".join([player['username'] for player in game_status['players']]))
+        send_message_to_players(game_status, "#ALL_NAME " + " ".join([player['username'] for player in game_status['players']]), server)
         if action == '#ENTER':
             for player in game_status['players']:    server.send_message(name2client[player['username']], "#IO %s entered the room" % m[1])
             game_status['players'].append({'username': m[1], 'card': None, 'in_game': False, 'pool': 0, 'action_yet': False})
@@ -302,53 +339,67 @@ def update_game_status(m, game_status, server):
     if action == '#CALL':
         DB[game_status['players'][game_status['now_playing']]['username']]['money'] -= game_status['now_bid'] - game_status['players'][game_status['now_playing']]['pool']
         game_status['players'][game_status['now_playing']]['pool'] = game_status['now_bid']
-        server.send_message_to_all("#IO %s called" % game_status['players'][game_status['now_playing']]['username'])
+        send_message_to_players(game_status, "#IO %s called" % game_status['players'][game_status['now_playing']]['username'], server)
         server.send_message(name2client[game_status['players'][game_status['now_playing']]['username']], "#CHIP %d" % DB[game_status['players'][game_status['now_playing']]['username']]['money'])
 
     elif action == '#RAISE':
         game_status['now_bid'] += int(m[1])
         DB[game_status['players'][game_status['now_playing']]['username']]['money'] -= game_status['now_bid'] - game_status['players'][game_status['now_playing']]['pool']
         game_status['players'][game_status['now_playing']]['pool'] = game_status['now_bid']
-        server.send_message_to_all("#IO %s raised $%s" % (game_status['players'][game_status['now_playing']]['username'], m[1]))
+        send_message_to_players(game_status, "#IO %s raised $%s" % (game_status['players'][game_status['now_playing']]['username'], m[1]), server)
         server.send_message(name2client[game_status['players'][game_status['now_playing']]['username']], "#CHIP %d" % DB[game_status['players'][game_status['now_playing']]['username']]['money'])
 
     elif action == '#FOLD':
         game_status['players'][game_status['now_playing']]['in_game'] = False
-        server.send_message_to_all("#IO %s folded" % game_status['players'][game_status['now_playing']]['username'])
+        send_message_to_players(game_status, "#IO %s folded" % game_status['players'][game_status['now_playing']]['username'], server)
 
     elif action == '#CHECK':
-        server.send_message_to_all("#IO %s checked" % game_status['players'][game_status['now_playing']]['username'])
+        send_message_to_players(game_status, "#IO %s checked" % game_status['players'][game_status['now_playing']]['username'], server)
         pass
 
     elif action == '#ALLIN':
         if DB[game_status['players'][game_status['now_playing']]['username']]['money'] < game_status['now_bid']:
-            return None
+            game_status['players'][game_status['now_playing']]['pool'] += DB[game_status['players'][game_status['now_playing']]['username']]['money']
+            DB[game_status['players'][game_status['now_playing']]['username']]['money'] = 0
+            send_message_to_players(game_status, "#IO %s All-In !!" % game_status['players'][game_status['now_playing']]['username'], server)
+            server.send_message(name2client[game_status['players'][game_status['now_playing']]['username']], "#CHIP %d" % DB[game_status['players'][game_status['now_playing']]['username']]['money'])
         else:
             game_status['now_bid'] += DB[game_status['players'][game_status['now_playing']]['username']]['money']
             DB[game_status['players'][game_status['now_playing']]['username']]['money'] = 0
             game_status['players'][game_status['now_playing']]['pool'] = game_status['now_bid']
-            server.send_message_to_all("#IO %s All-In !!" % game_status['players'][game_status['now_playing']]['username'])
+            send_message_to_players(game_status, "#IO %s All-In !!" % game_status['players'][game_status['now_playing']]['username'], server)
             server.send_message(name2client[game_status['players'][game_status['now_playing']]['username']], "#CHIP %d" % DB[game_status['players'][game_status['now_playing']]['username']]['money'])
 
     # 通知所有人現在下注金額
-    server.send_message_to_all("#BID %d" % game_status['now_bid'])
-    server.send_message_to_all("#ALL_STATUS " + " ".join(["1" if player['in_game'] else "0" for player in game_status['players']]))
-    server.send_message_to_all("#ALL_BID " + " ".join([str(player['pool']) for player in game_status['players']]))
-    server.send_message_to_all("#ALL_MONEY " + " ".join([str(DB[player['username']]['money']) for player in game_status['players']]))
+    send_message_to_players(game_status, "#BID %d" % game_status['now_bid'], server)
+    all_status = []
+    for player in game_status['players']:
+        if player['username'] in name2client.keys():
+            all_status.append("1" if player['in_game'] else "0")
+        else:
+            all_status.append("-1")
+    send_message_to_players(game_status, "#ALL_STATUS " + " ".join(all_status), server)
+    send_message_to_players(game_status, "#ALL_BID " + " ".join([str(player['pool']) for player in game_status['players']]), server)
+    send_message_to_players(game_status, "#ALL_MONEY " + " ".join([str(DB[player['username']]['money']) for player in game_status['players']]), server)
 
     # 若為該輪最後一位玩家，turn ++，開牌
     if is_last_player(game_status):
         if game_status['turn'] != 3:
             B = ''
             for c in game_status['board'][:3+game_status['turn']]:    B += ' ' + NUMS[c%13] + SUITS[c//13]
-            server.send_message_to_all("#BOARD%s" % B)
-        game_status['turn'] += 1
+            send_message_to_players(game_status, "#BOARD%s" % B, server)
+        
+        if game_status['turn'] != 4:    game_status['turn'] += 1
         for player in game_status['players']:    player['action_yet'] = False
 
     # 找下一位玩家
     for i in range(game_status['player_num']):
         count = (game_status['now_playing']+i+1) % game_status['player_num']
         if game_status['players'][count]['in_game']:
+            # check if player left
+            if game_status['players'][count]['username'] not in name2client.keys():
+                game_status['players'][count]['in_game'] = False
+                continue
             if count == game_status['now_playing']:    game_status['turn'] = 4
             else:
                 game_status['now_playing'] = count
@@ -356,46 +407,75 @@ def update_game_status(m, game_status, server):
 
     # 該輪牌局全部結束，結算，開啟新局
     if game_status['turn'] == 4:
-        winners = who_win(game_status)
-        for i in range(len(game_status['players'])):
-            if game_status['players'][i]['in_game']:
-                server.send_message_to_all("#FIN_HAND %d %s %s %s" % (i,game_status['players'][i]['username'], NUMS[game_status['players'][i]['card'][0]%13] + SUITS[game_status['players'][i]['card'][0]//13], NUMS[game_status['players'][i]['card'][1]%13] + SUITS[game_status['players'][i]['card'][1]//13]))
-        server.send_message_to_all("#WIN %s won!" % " and ".join(winners))
-        bids = []
-        p_pools = []
-        for player in game_status['players']:
-            p_pools.append(player['pool'])
-            if player['pool'] not in bids and player['in_game']:
-                bids.append(player['pool'])
-        bids.sort()
-        pools = np.zeros(len(bids))
-        bids.insert(0,0)
-        for i in range(1,len(bids)):
-            w = bids[i] - bids[i-1]
-            for j in range(len(p_pools)):
-                pools[i-1] += p_pools[j] if p_pools[j] < w else w
-                p_pools[j] -= p_pools[j] if p_pools[j] < w else w
-        del bids[0]
-        for i in range(len(bids)):
-            w_w = []
-            p_w = []
+        if action != "#CONTINUE" and action != "#LEAVE":    
+            winners = who_win(game_status)
+            for i in range(len(game_status['players'])):
+                if game_status['players'][i]['in_game']:
+                    send_message_to_players(game_status, "#FIN_HAND %d %s %s %s" % (i,game_status['players'][i]['username'], NUMS[game_status['players'][i]['card'][0]%13] + SUITS[game_status['players'][i]['card'][0]//13], NUMS[game_status['players'][i]['card'][1]%13] + SUITS[game_status['players'][i]['card'][1]//13]), server)
+            send_message_to_players(game_status, "#WIN %s won!" % " and ".join(winners), server)
+            bids = []
+            p_pools = []
             for player in game_status['players']:
-                if player['pool'] > bids[i] and player['in_game']:
-                    p_w.append(player['username'])
-                if player['username'] in winners and player['pool'] > bids[i]:
-                    w_w.append(player['username'])
-            for name in w_w:
-                DB[name]['money'] += pools[i] / len(w_w)
-            if w_w:
-                for name in p_w:
-                    DB[name]['money'] += pools[i] / len(p_w)
+                p_pools.append(player['pool'])
+                if player['pool'] not in bids and player['in_game']:
+                    bids.append(player['pool'])
+            bids.sort()
+            pools = np.zeros(len(bids))
+            bids.insert(0,0)
+            for i in range(1,len(bids)):
+                w = bids[i] - bids[i-1]
+                for j in range(len(p_pools)):
+                    pools[i-1] += p_pools[j] if p_pools[j] < w else w
+                    p_pools[j] -= p_pools[j] if p_pools[j] < w else w
+            del bids[0]
+            for i in range(len(bids)):
+                w_w = []
+                p_w = []
+                for player in game_status['players']:
+                    if player['pool'] > bids[i] and player['in_game']:
+                        p_w.append(player['username'])
+                    if player['username'] in winners and player['pool'] > bids[i]:
+                        w_w.append(player['username'])
+                for name in w_w:
+                    DB[name]['money'] += pools[i] / len(w_w)
+                if w_w:
+                    for name in p_w:
+                        DB[name]['money'] += pools[i] / len(p_w)
+            for player in game_status['players']:
+                adjust_coins(player['username'], DB[player['username']]['money'])
+                player['in_game'] = False
+
         for player in game_status['players']:
-            adjust_coins(player['username'], DB[player['username']]['money'])
-        init_game(game_status, server)
+            if player['username'] not in name2client.keys():
+                send_message_to_players(game_status, "#END", server)
+                del table_list[name2table[player['username']]]
+                del name2table[player['username']]
+                return None
+
+        # TO BE FIXED
+        in_game_players = 0
+        print("DEBUG:", action, in_game_players)
+        if action == '#CONTINUE':
+            if m[1] in name2table.keys():
+                for player in game_status['players']:
+                    if player['username'] == m[1]:
+                        player['in_game'] = True
+                    if player['in_game']:    in_game_players += 1
+        elif action == '#LEAVE':
+            player = game_status['players'][0]
+            send_message_to_players(game_status, "#END", server)
+            del table_list[name2table[player['username']]]
+            for player in game_status['players']:
+                del name2table[player['username']]
+
+
+        if in_game_players == game_status['player_num']:
+            init_game(game_status, server)
+
 
     # 告知下個玩家：輪你
     server.send_message(name2client[game_status['players'][game_status['now_playing']]['username']], "#TURN")
-    server.send_message_to_all("#NOW_PLAY %d" % game_status['now_playing'])
+    send_message_to_players(game_status, "#NOW_PLAY %d" % game_status['now_playing'], server)
 
 
 PORT=9001

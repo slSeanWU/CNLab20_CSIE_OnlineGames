@@ -60,7 +60,7 @@ function update_user(user_id, change_class, change_value){
             $(id).find(".small-blind").show();
         else{
             $(id).find(change_class).html(change_value);
-            if (change_class==".status" && change_value=="Fold")
+            if (change_class==".status" && change_value!="Active")
                 $(id).css("opacity","0.5");
         }
     }
@@ -86,7 +86,7 @@ function add_user(user_id, user_name, is_self){
 
 if ("WebSocket" in window){
     console.log("您的瀏覽器支援 WebSocket!");
-    var ws = new WebSocket("ws://192.168.1.45:9001");
+    var ws = new WebSocket("ws://10.5.0.66:9001");
     ws.onopen = function(){
         console.log("websocket 已連線上");
         //var username = flask['username'];
@@ -96,6 +96,7 @@ if ("WebSocket" in window){
 
     ws.onmessage = function (evt) {
         var dataReceive = evt.data;
+        console.log(dataReceive);
         if (dataReceive.match("#IO") != null)
             $('#history').val($('#history').val()+dataReceive.substring(4,dataReceive.length)+"\n");
         else if (dataReceive.match("#BID") != null)
@@ -124,9 +125,14 @@ if ("WebSocket" in window){
         {
             $('#history').val($('#history').val() + "It's your turn!" + "\n");
             action = true;
+            console.log(action);
             oStatus.val("Board: "+board.toString()+"\n" + "Hand: "+hand.toString()+"\n" + "now bid: "+now_bid+"\n" + "my bid: "+my_bid+"\n" + "chip: "+chip+"\n");
             if (chip == 0)
+            {
+                ws.send("#CHECK");
                 action = false;
+            }
+            console.log(action);
         }
         else if (dataReceive.match("#BOARD") != null)
         {
@@ -146,6 +152,7 @@ if ("WebSocket" in window){
             chip = parseInt(dataReceive.split(" ")[1]);
             oStatus.val("Board: "+board.toString()+"\n" + "Hand: "+hand.toString()+"\n" + "now bid: "+now_bid+"\n" + "my bid: "+my_bid+"\n" + "chip: "+chip+"\n");
             console.log(dataReceive);
+            console.log(chip);
         }
         else if (dataReceive.match("#CHAT") != null)
             chatroom.val(dataReceive.substring(5,dataReceive.length)+"\n"+chatroom.val());
@@ -194,8 +201,10 @@ if ("WebSocket" in window){
             for (var i = 0; i < player_num; i++) 
                 if(all_status[i]=="1")
                     update_user(i, ".status", "Active");
-                else
+                else if (all_status[i] == "0")
                     update_user(i, ".status", "Fold");
+                else
+                    update_user(i, ".status", "Disconnect");
         }
         else if (dataReceive.match("#ALL_BID") != null){
             var all_bid = dataReceive.split(" ").slice(1);
@@ -227,13 +236,20 @@ if ("WebSocket" in window){
             }
             
         }
+        else if (dataReceive.match("#END") != null){
+            alert("Someone left the room");
+            window.location.replace("main_menu");
+        }
         else if (dataReceive.match("#WIN") != null){
             $("#special-msg").show();
-            if(confirm(dataReceive+"\n If you're ready to start new game, press OK\nElse press Cancel and leave")==false)
+            if(confirm(dataReceive.substring(5,dataReceive.length)+"\n If you're ready to start new game, press OK\nElse press Cancel and leave")==false){
                 //leave
+                ws.send("#LEAVE");
                 window.location.replace("main_menu");
+            }
             else{
                 //continue
+                ws.send("#CONTINUE " + player_name);
                 console.log("continue");
             }
 
@@ -241,6 +257,7 @@ if ("WebSocket" in window){
     };
 
     ws.onclose = function() {
+        //ws.send("#FOLD");
         console.log("連線已關閉...");
     };
 
@@ -257,6 +274,7 @@ function sendMessage(){
 }
 
 function call(){
+    console.log(action);
     if (action)
     {
         if ((now_bid - my_bid) > chip)
@@ -321,14 +339,9 @@ function check(){
 function allin(){
     if (action)
     {
-        if ((my_bid + chip) < now_bid)
-            oHistory.val(oHistory.val() + "You don't have that much money you poor little piece of sh*t 凸-_-凸\n");
-        else
-        {
-            ws.send("#ALLIN");
-            my_bid += chip;
-            action = false;
-        }
+        ws.send("#ALLIN");
+        my_bid += chip;
+        action = false;
     }
     else
         oHistory.val(oHistory.val() + "It's not your turn you little sh*t 凸-_-凸\n");

@@ -68,7 +68,7 @@ def member_center():
       coins=user.coins,
       slot_rds=slot_results.slot_rds,
       slot_bet=slot_results.slot_bet or 0,
-      slot_earnings=slot_results.slot_earnings or 0,
+      slot_earnings=(slot_results.slot_earnings - slot_results.slot_bet) or 0,
       blackjack_rds=blackjack_results.blackjack_rds,
       blackjack_bet=blackjack_results.blackjack_bet or 0,
       blackjack_earnings=blackjack_results.blackjack_earnings or 0

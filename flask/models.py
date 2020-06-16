@@ -77,3 +77,21 @@ class BlackJackGameRecord(db.Model):
     bet_amount = db.Column(db.Integer, nullable=False)
     earnings = db.Column(db.Integer, nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.now, nullable=False)
+
+class TexasGameRecord(db.Model):
+    __tablename__ = 'texas_game_record'
+    play_id = db.Column(db.Integer, primary_key=True)
+    player_num = db.Column(db.Integer, nullable=False)
+    user_id1 = db.Column(db.Integer, nullable=True)
+    user_id2 = db.Column(db.Integer, nullable=True)
+    user_id3 = db.Column(db.Integer, nullable=True)
+    user_id4 = db.Column(db.Integer, nullable=True)
+    user_id5 = db.Column(db.Integer, nullable=True)
+    user_id6 = db.Column(db.Integer, nullable=True)
+    user_id7 = db.Column(db.Integer, nullable=True)
+    user_id8 = db.Column(db.Integer, nullable=True)
+    user_id9 = db.Column(db.Integer, nullable=True)
+    bet_amount = db.Column(db.Integer, nullable=False)
+    earnings = db.Column(db.Integer, nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.now, nullable=False)
+    

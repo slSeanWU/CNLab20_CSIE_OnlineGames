@@ -100,7 +100,7 @@ def slot_play():
     username=user.username, coins=user.coins,
     rounds_played=stats['rounds_played'],
     total_bet=stats['total_bet'],
-    total_earnings=stats['total_earnings']-stats['total_bet'],
+    total_earnings=stats['total_earnings'],
     last_earnings=stats['last_earnings'],
     slot=stats['slot'],
     winning_lines=stats['winning_lines'],
